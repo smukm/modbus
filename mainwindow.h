@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "modbusmanager.h"
 #include <QMainWindow>
 #include <QModbusRtuSerialClient>
 #include <QModbusDataUnit>
@@ -23,8 +24,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QModbusClient* modbusDevice = nullptr;
-    QModbusReply *currentReply = nullptr;  // <-- Для отслеживания текущего запроса
+    ModbusManager* m_modbusManager;
 
     void setPorts();
     void fillSettings();
@@ -35,13 +35,8 @@ private:
     void disconnectFromDevice();
 
 private slots:
-    void slotApplySettings();
-    //void slotPortOpened();
-    //void slotPortClosed();
-    void slotSendData();
-
-    void onStateChanged(QModbusDevice::State state);
-    void onErrorOccurred(QModbusDevice::Error error);
-    void onReplyFinished();
+    void onApplySettings();
+    void onSendData();
+    void onModbusDataReceived(const QModbusDataUnit &unit);
 };
 #endif // MAINWINDOW_H

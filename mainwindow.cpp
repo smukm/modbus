@@ -5,40 +5,60 @@
 #include <QModbusReply>
 #include <QMessageBox>
 
+/**
+ * @brief Конструктор главного окна приложения.
+ * Инициализирует UI, создает экземпляр ModbusManager и настраивает все сигналы и слоты.
+ */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    // 1. Инициализация Modbus устройства
-    modbusDevice = new QModbusRtuSerialClient(this);
+    m_modbusManager = new ModbusManager(this);
+    connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
+        ui->textEditLog->append("✅ Modbus: Порт успешно подключен.");
+        setControlsForOpenPort();
+    });
 
-    // Подключаем сигналы состояния и ошибок
-    connect(modbusDevice, &QModbusClient::stateChanged, this, &MainWindow::onStateChanged);
-    connect(modbusDevice, &QModbusClient::errorOccurred, this, &MainWindow::onErrorOccurred);
+    connect(m_modbusManager, &ModbusManager::disconnected, this, [this]() {
+        ui->textEditLog->append("⭕ Modbus: Порт отключен.");
+        setControlsForClosedPort();
+    });
 
-    // Заполняем список доступных портов
+    connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
+        QMessageBox::warning(this, "Ошибка", error);
+    });
+
+    connect(m_modbusManager, &ModbusManager::errorCriticalOccured, this, [this](const QString &error) {
+        QMessageBox::critical(this, "Ошибка", error);
+    });
+
+    // Подключение сигнала получения данных к специализированному слоту обработки
+    connect(m_modbusManager, &ModbusManager::dataReceived, this, &MainWindow::onModbusDataReceived);
+
+    // Первичная инициализация элементов интерфейса
     setPorts();
     fillSettings();
     setControlsForSendData();
     setControlsForClosedPort();
 
-    connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::slotApplySettings);
-    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::slotSendData);
+    // Подключение кнопок интерфейса к слотам
+    connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
+    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onSendData);
 }
 
 MainWindow::~MainWindow()
 {
-    if (modbusDevice) {
-        modbusDevice->disconnectDevice();
+    if (m_modbusManager) {
+        m_modbusManager->disconnectFromDevice();
     }
     delete ui;
 }
 
 /**
- * @brief Инициализирует и заполняет выпадающий список доступных COM-портов.
- * Также создает экземпляр класса Comport для первого найденного порта.
+ * @brief Сканирует систему и заполняет выпадающий список доступными COM-портами.
+ * Блокирует кнопку подключения, если порты не найдены.
  */
 void MainWindow::setPorts() {
 
@@ -111,77 +131,34 @@ void MainWindow::fillSettings() {
  * Реализует логику переключения (toggle): если порт открыт — закрываем его,
  * если закрыт — считываем настройки из UI и открываем.
  */
-void MainWindow::slotApplySettings() {
-    if (!modbusDevice) {
+void MainWindow::onApplySettings() {
+    if (!m_modbusManager) {
         return;
-    }
+     }
 
-    if (modbusDevice->state() == QModbusDevice::ConnectedState) {
-        disconnectFromDevice();
+    if (m_modbusManager->isConnected()) {
+        m_modbusManager->disconnectFromDevice();
     } else {
-        connectToDevice();
+        ui->textEditLog->append("Попытка подключения к " + ui->cbPorts->currentData().toString());
+        ModbusConnectionSettings settings = {
+            .portName = ui->cbPorts->currentData().toString(),
+            .baudRate = ui->cbBaudRate->currentData().toInt(),
+            .parity = ui->cbParity->currentData().toInt(),
+            .dataBits = ui->cbDataBits->currentData().toInt(),
+            .stopBits = ui->cbStopBits->currentData().toInt()
+        };
+        m_modbusManager->connectToDevice(settings);
     }
-}
-
-void MainWindow::connectToDevice() {
-    if (!modbusDevice) return;
-
-    // Считываем параметры из UI
-    QString portName = ui->cbPorts->currentData().toString();
-    int baudRate = ui->cbBaudRate->currentData().toInt();
-    int parity = ui->cbParity->currentData().toInt();
-    int dataBits = ui->cbDataBits->currentData().toInt();
-    int stopBits = ui->cbStopBits->currentData().toInt();
-
-    // Применяем параметры к Modbus-устройству
-    modbusDevice->setConnectionParameter(QModbusDevice::SerialPortNameParameter, portName);
-    modbusDevice->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, baudRate);
-    modbusDevice->setConnectionParameter(QModbusDevice::SerialParityParameter, parity);
-    modbusDevice->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, dataBits);
-    modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, stopBits);
-
-    // Таймаут ответа (по умолчанию 1000 мс, можно увеличить для медленных сетей)
-    modbusDevice->setTimeout(1000);
-    // Количество повторных попыток при сбое
-    modbusDevice->setNumberOfRetries(3);
-
-    ui->textEditLog->append("Попытка подключения к " + portName);
-
-    if (!modbusDevice->connectDevice()) {
-        QMessageBox::critical(this, "Ошибка", "Не удалось начать подключение: " + modbusDevice->errorString());
-    }
-}
-
-void MainWindow::disconnectFromDevice() {
-    if (modbusDevice) {
-        modbusDevice->disconnectDevice();
-    }
-}
-
-void MainWindow::onStateChanged(QModbusDevice::State state) {
-    if (state == QModbusDevice::UnconnectedState) {
-        setControlsForClosedPort();
-        ui->textEditLog->append("Modbus: Порт отключен.");
-    } else if (state == QModbusDevice::ConnectedState) {
-        setControlsForOpenPort();
-        ui->textEditLog->append("Modbus: Порт успешно подключен.");
-    }
-}
-
-void MainWindow::onErrorOccurred(QModbusDevice::Error error) {
-    if (error == QModbusDevice::NoError) return;
-    ui->textEditLog->append("Warning! Modbus ошибка:" + modbusDevice->errorString());
 }
 
 /**
- * @brief Отправка данных в открытый порт
+ * @brief Формирует и отправляет Modbus-запрос на основе данных из полей ввода.
  */
-void MainWindow::slotSendData() {
-    if (!modbusDevice || modbusDevice->state() != QModbusDevice::ConnectedState) {
-        QMessageBox::warning(this, "Ошибка", "Порт не открыт!");
+void MainWindow::onSendData() {
+    if (!m_modbusManager || !m_modbusManager->isConnected()) {
+        QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
         return;
     }
-
     // base = 0 позволяет автоматически определять систему счисления:
     // "0xFF" -> HEX, "0" -> OCT, "255" -> DEC
     auto parseByte = [](const QString &text, bool &ok) -> quint8 {
@@ -194,7 +171,7 @@ void MainWindow::slotSendData() {
     };
     bool ok;
 
-    // 1. Считываем и парсим поля из UI
+    // Парсинг и валидация полей ввода
     quint8 deviceAddr = parseByte(ui->leDeviceAddress->text(), ok);
     if (!ok) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (ожидается 0-255 или 0x00-0xFF)!");
@@ -222,112 +199,83 @@ void MainWindow::slotSendData() {
     quint16 startAddress = (static_cast<quint16>(addrHigh) << 8) | addrLow;
     quint16 count = (static_cast<quint16>(qtyHigh) << 8) | qtyLow;
 
-    // Очищаем предыдущий ответ, если он вдруг еще жив
-    if (currentReply) {
-        currentReply->deleteLater();
-        currentReply = nullptr;
-    }
-
-    QModbusDataUnit request;
+    // Определение типа запроса (чтение или запись) на основе кода функции
     bool isReadRequest = true;
 
-    // Маппинг кода функции на тип данных QModbusDataUnit
     switch (funcCode) {
-    case 0x01: request = QModbusDataUnit(QModbusDataUnit::Coils, startAddress, count); break;
-    case 0x02: request = QModbusDataUnit(QModbusDataUnit::DiscreteInputs, startAddress, count); break;
-    case 0x03: request = QModbusDataUnit(QModbusDataUnit::HoldingRegisters, startAddress, count); break;
-    case 0x04: request = QModbusDataUnit(QModbusDataUnit::InputRegisters, startAddress, count); break;
-
-    // Для записи (упрощенный пример, предполагается, что в поле "Количество" пользователь вводит значение для записи)
-    case 0x05:
-    case 0x06:
-        isReadRequest = false;
-        request = QModbusDataUnit(QModbusDataUnit::HoldingRegisters, startAddress, 1);
-        request.setValue(0, count); // Используем поле count как значение для записи
+    case 0x01:case 0x02:case 0x03:case 0x04:
+        // Это команды чтения, isReadRequest остается true
         break;
-
+    case 0x05:case 0x06:
+        // Это команды записи одного элемента
+        isReadRequest = false;
+        break;
     default:
         QMessageBox::warning(this, "Ошибка", "Данный код функции не поддерживается в этом примере");
         return;
     }
 
-    // Отправка запроса
+    // Делегирование отправки данных менеджеру
     if (isReadRequest) {
-        currentReply = modbusDevice->sendReadRequest(request, deviceAddr);
+        m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
     } else {
-        currentReply = modbusDevice->sendWriteRequest(request, deviceAddr);
+        m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, count);
     }
 
-    if (!currentReply) {
-        QMessageBox::critical(this, "Ошибка", "Не удалось отправить запрос: " + modbusDevice->errorString());
-        return;
-    }
-
-    // Если ответ пришел мгновенно (редко, но бывает), слот не вызовется, поэтому проверяем isFinished()
-    if (currentReply->isFinished()) {
-        onReplyFinished();
-    } else {
-        connect(currentReply, &QModbusReply::finished, this, &MainWindow::onReplyFinished);
-    }
 
     ui->textEditLog->append("Запрос отправлен. Ожидание ответа...");
 }
 
-
-void MainWindow::onReplyFinished() {
-    if (!currentReply) return;
-
-    if (currentReply->error() == QModbusDevice::NoError) {
-        const QModbusDataUnit unit = currentReply->result();
-
-        QString regType;
-        switch (unit.registerType()) {
-        case QModbusDataUnit::RegisterType::HoldingRegisters:
-            regType = "Holding Registers";
-            break;
-        case QModbusDataUnit::RegisterType::InputRegisters:
-            regType = "Input Registers";
-            break;
-        case QModbusDataUnit::RegisterType::DiscreteInputs:
-            regType = "Discrete Inputs";
-            break;
-        case QModbusDataUnit::RegisterType::Coils:
-            regType = "Coils";
-            break;
-        default:
-            regType = "Unknown type";
-        }
-
-        QString logMessage = QString("Успешный ответ Modbus!\n"
-                                     "Тип регистра: %1\n"
-                                     "Начальный адрес: %2\n"
-                                     "Количество значений: %3")
-                                 .arg(regType)
-                                 .arg(unit.startAddress())
-                                 .arg(unit.valueCount());
-
-        ui->textEditLog->append(logMessage);
-        // Выводим полученные значения
-        QString resultStr;
-        for (uint i = 0; i < unit.valueCount(); ++i) {
-            const QString entry = QString("Адрес %1: %2 (0x%3)")
-                                      .arg(unit.startAddress() + i)
-                                      .arg(unit.value(i))
-                                      .arg(unit.value(i), 4, 16, QChar('0')).toUpper();
-            resultStr += entry + "\n";
-        }
-        ui->textEditRecievedData->append(resultStr);
-
-    } else {
-        qWarning() << "Ошибка ответа Modbus:" << currentReply->errorString();
+/**
+ * @brief Слот обработки успешного ответа от устройства Modbus.
+ * Форматирует полученные данные и выводит их в лог и поле результатов.
+ */
+void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
+    QString regType;
+    switch (unit.registerType()) {
+    case QModbusDataUnit::RegisterType::HoldingRegisters:
+        regType = "Holding Registers";
+        break;
+    case QModbusDataUnit::RegisterType::InputRegisters:
+        regType = "Input Registers";
+        break;
+    case QModbusDataUnit::RegisterType::DiscreteInputs:
+        regType = "Discrete Inputs";
+        break;
+    case QModbusDataUnit::RegisterType::Coils:
+        regType = "Coils";
+        break;
+    default:
+        regType = "Unknown type";
     }
 
-    // Обязательно удаляем объект ответа, чтобы избежать утечки памяти
-    currentReply->deleteLater();
-    currentReply = nullptr;
+    // Формирование сводного сообщения об успехе
+    QString logMessage = QString("Успешный ответ Modbus!\n"
+                                 "Тип регистра: %1\n"
+                                 "Начальный адрес: %2\n"
+                                 "Количество значений: %3")
+                             .arg(regType)
+                             .arg(unit.startAddress())
+                             .arg(unit.valueCount());
+
+    ui->textEditLog->append(logMessage);
+
+    // Формирование детального списка полученных значений
+    QString resultStr;
+    for (uint i = 0; i < unit.valueCount(); ++i) {
+        const QString entry = QString("Адрес %1: %2 (0x%3)")
+                                  .arg(unit.startAddress() + i)
+                                  .arg(unit.value(i))
+                                  .arg(unit.value(i), 4, 16, QChar('0')).toUpper();
+        resultStr += entry + "\n";
+    }
+    ui->textEditRecievedData->append(resultStr);
 }
 
-
+/**
+ * @brief Блокирует элементы изменения настроек и активирует элементы отправки данных.
+ * Вызывается при успешном подключении.
+ */
 void MainWindow::setControlsForOpenPort() {
     ui->btnApply->setText("Закрыть");
     ui->cbPorts->setEnabled(false);
@@ -345,6 +293,10 @@ void MainWindow::setControlsForOpenPort() {
     ui->leRegistersQty2->setEnabled(true);
 }
 
+/**
+ * @brief Разблокирует элементы изменения настроек и деактивирует отправку данных.
+ * Вызывается при отключении от устройства.
+ */
 void MainWindow::setControlsForClosedPort() {
     ui->btnApply->setEnabled(true);
     ui->btnApply->setText("Открыть");

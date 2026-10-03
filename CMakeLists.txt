@@ -23,6 +23,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(serialport
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        modbusmanager.h modbusmanager.cpp
 
     )
 # Define target properties for Android with Qt 6 as:
