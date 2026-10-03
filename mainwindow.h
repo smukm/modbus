@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "comport.h"
+#include <QModbusRtuSerialClient>
+#include <QModbusDataUnit>
+#include <QModbusReply>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,20 +23,25 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    Comport *m_comPort;
+    QModbusClient* modbusDevice = nullptr;
+    QModbusReply *currentReply = nullptr;  // <-- Для отслеживания текущего запроса
 
     void setPorts();
     void fillSettings();
-    void openPortWithSettings();
     void setControlsForOpenPort();
     void setControlsForClosedPort();
     void setControlsForSendData();
+    void connectToDevice();
+    void disconnectFromDevice();
 
 private slots:
     void slotApplySettings();
-    void slotPortOpened();
-    void slotPortClosed();
+    //void slotPortOpened();
+    //void slotPortClosed();
     void slotSendData();
-    void slotModbusResponse(const QByteArray &frame);
+
+    void onStateChanged(QModbusDevice::State state);
+    void onErrorOccurred(QModbusDevice::Error error);
+    void onReplyFinished();
 };
 #endif // MAINWINDOW_H

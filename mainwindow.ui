@@ -34,7 +34,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Порты:</string>
+     <string>Порты</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btnApply">
@@ -63,13 +63,6 @@
      <item row="3" column="1">
       <widget class="QComboBox" name="cbStopBits"/>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Четность</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
@@ -77,11 +70,18 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="cbDataBits"/>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cbParity"/>
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cbBaudRate"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Четность</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_3">
@@ -97,18 +97,8 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbParity"/>
-     </item>
-     <item row="4" column="1">
-      <widget class="QComboBox" name="cbFlowControl"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Управление потоком</string>
-       </property>
-      </widget>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cbDataBits"/>
      </item>
     </layout>
    </widget>
@@ -128,8 +118,8 @@
    <widget class="QPushButton" name="btnSendData">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>30</y>
+      <x>610</x>
+      <y>240</y>
       <width>80</width>
       <height>21</height>
      </rect>
@@ -141,8 +131,8 @@
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>80</y>
+      <x>300</x>
+      <y>30</y>
       <width>391</width>
       <height>201</height>
      </rect>
@@ -222,7 +212,40 @@
      <item row="2" column="1">
       <widget class="QComboBox" name="cbCode"/>
      </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Полученные данные:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QTextEdit" name="textEditRecievedData"/>
+     </item>
     </layout>
+   </widget>
+   <widget class="QTextEdit" name="textEditLog">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>340</y>
+      <width>641</width>
+      <height>161</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>320</y>
+      <width>41</width>
+      <height>14</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Логи</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
