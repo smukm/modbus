@@ -27,7 +27,7 @@ public:
 
     // Методы для отправки запросов (скрывают сложность QModbusDataUnit)
     void sendReadRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, quint16 count);
-    void sendWriteRequest(quint8 serverAddress, quint8 funcCode, quint16 address, quint16 value);
+    void sendWriteRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, const QVector<quint16> &values);
 
 signals:
     void connected();

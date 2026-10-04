@@ -17,12 +17,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_modbusManager = new ModbusManager(this);
     connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
-        ui->textEditLog->append("✅ Modbus: Порт успешно подключен.");
+        toLog("✅ Modbus: Порт успешно подключен.");
         setControlsForOpenPort();
     });
 
     connect(m_modbusManager, &ModbusManager::disconnected, this, [this]() {
-        ui->textEditLog->append("⭕ Modbus: Порт отключен.");
+        toLog("⭕ Modbus: Порт отключен.");
         setControlsForClosedPort();
     });
 
@@ -38,10 +38,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_modbusManager, &ModbusManager::dataReceived, this, &MainWindow::onModbusDataReceived);
 
     // Первичная инициализация элементов интерфейса
-    setPorts();
     fillSettings();
     setControlsForSendData();
     setControlsForClosedPort();
+    setPorts();
 
     // Подключение кнопок интерфейса к слотам
     connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
@@ -139,7 +139,7 @@ void MainWindow::onApplySettings() {
     if (m_modbusManager->isConnected()) {
         m_modbusManager->disconnectFromDevice();
     } else {
-        ui->textEditLog->append("Попытка подключения к " + ui->cbPorts->currentData().toString());
+        toLog("Попытка подключения к " + ui->cbPorts->currentData().toString());
         ModbusConnectionSettings settings = {
             .portName = ui->cbPorts->currentData().toString(),
             .baudRate = ui->cbBaudRate->currentData().toInt(),
@@ -159,6 +159,8 @@ void MainWindow::onSendData() {
         QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
         return;
     }
+
+    // Парсер для 8-битных значений (только для адреса устройства)
     // base = 0 позволяет автоматически определять систему счисления:
     // "0xFF" -> HEX, "0" -> OCT, "255" -> DEC
     auto parseByte = [](const QString &text, bool &ok) -> quint8 {
@@ -168,6 +170,15 @@ void MainWindow::onSendData() {
             return 0;
         }
         return static_cast<quint8>(val);
+    };
+    // Парсер для 16-битных значений (для адресов регистров и количества)
+    auto parseWord = [](const QString &text, bool &ok) -> quint16 {
+        int val = text.trimmed().toInt(&ok, 0);
+        if (!ok || val < 0 || val > 65535) {
+            ok = false;
+            return 0;
+        }
+        return static_cast<quint16>(val);
     };
     bool ok;
 
@@ -180,24 +191,23 @@ void MainWindow::onSendData() {
 
     quint8 funcCode = static_cast<quint8>(ui->cbCode->currentData().toInt());
 
-    bool okAddr1, okAddr2, okQty1, okQty2;
-    quint8 addrHigh = parseByte(ui->leRegisterAddress1->text(), okAddr1);
-    quint8 addrLow  = parseByte(ui->leRegisterAddress2->text(), okAddr2);
-    quint8 qtyHigh  = parseByte(ui->leRegistersQty1->text(), okQty1);
-    quint8 qtyLow   = parseByte(ui->leRegistersQty2->text(), okQty2);
+    bool okAddr, okQty;
+    quint16 startAddress = parseWord(ui->leRegisterAddress->text(), okAddr);
+    quint16 count  = parseWord(ui->leRegistersQty->text(), okQty);
 
-    if (!okAddr1 || !okAddr2) {
-        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра!");
+    if (!okAddr) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра (0-65535)!");
         return;
     }
-    if (!okQty1 || !okQty2) {
-        QMessageBox::warning(this, "Ошибка ввода", "Некорректное количество регистров / значение!");
+    if (!okQty) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректное количество регистров (1-65535)!");
         return;
     }
 
-    // Собираем 16-битные значения из старшего и младшего байтов
-    quint16 startAddress = (static_cast<quint16>(addrHigh) << 8) | addrLow;
-    quint16 count = (static_cast<quint16>(qtyHigh) << 8) | qtyLow;
+    toLog(QString("%1:\n Адрес устройства: %2, адрес регистра: %3, кол-во регистров: %4")
+              .arg(ui->cbCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
+
+    QVector<quint16> writeValues;
 
     // Определение типа запроса (чтение или запись) на основе кода функции
     bool isReadRequest = true;
@@ -206,7 +216,7 @@ void MainWindow::onSendData() {
     case 0x01:case 0x02:case 0x03:case 0x04:
         // Это команды чтения, isReadRequest остается true
         break;
-    case 0x05:case 0x06:
+    case 0x05:case 0x06: case 0x0F: case 0x10:
         // Это команды записи одного элемента
         isReadRequest = false;
         break;
@@ -215,15 +225,72 @@ void MainWindow::onSendData() {
         return;
     }
 
+    // валидация данных для записи
+    if (!isReadRequest) {
+        QString dataText = ui->leData->text().trimmed();
+        if (dataText.isEmpty()) {
+            QMessageBox::warning(this, "Ошибка ввода", "Введите значение для записи!");
+            return;
+        }
+        // парсим строку с данными
+        const QStringList parts = dataText.split(',', Qt::SkipEmptyParts);
+        for (const QString &part : parts) {
+            bool valOk;
+            // base = 0 автоматически распознает "0xFF" как HEX, "0" как OCT, остальные как DEC
+            int val = part.trimmed().toInt(&valOk, 0);
+
+            if (!valOk || val < 0 || val > 0xFFFF) { // Проверка на диапазон 16-битного значения
+                QMessageBox::warning(this, "Ошибка ввода",
+                                     QString("Некорректное значение для записи: '%1'\nОжидается число от 0 до 65535 (или 0x0000-0xFFFF)").arg(part));
+                return;
+            }
+
+            // Специальная проверка для дискретных выходов (COILS)
+            if (funcCode == 0x05 || funcCode == 0x0F) {
+                // Modbus требует строго 0x0000 (OFF) или 0xFF00 (ON).
+                // Некоторые устройства отвергают значение "1", хотя оно логично.
+                if (val != 0 && val != 1 && val != 0xFF00 && val != 65280) {
+                    QMessageBox::warning(this, "Ошибка ввода",
+                                         QString("Для функций 0x05/0x0F (Coils) допустимы только значения:\n"
+                                                 "0 (или 0x00) — для выключения (OFF)\n"
+                                                 "65280 (или 0xFF00) — для включения (ON)\n"
+                                                 "Вы ввели: %1").arg(val));
+                    return;
+                }
+                // Приводим 1 к стандартному 0xFF00
+                if (val == 1) {
+                    val = 0xFF00;
+                }
+            }
+            writeValues.append(static_cast<quint16>(val));
+        }
+
+        // Проверка соответствия количества
+        if (funcCode == 0x0F || funcCode == 0x10) {
+            if (writeValues.size() != count) {
+                QMessageBox::warning(this, "Предупреждение",
+                                     QString("Количество введенных значений (%1) не совпадает с указанным количеством (%2).\nБудет записано %3 значений.")
+                                         .arg(writeValues.size()).arg(count).arg(writeValues.size()));
+                count = static_cast<quint16>(writeValues.size());
+            }
+        } else {
+            if (writeValues.size() > 1) {
+                QMessageBox::warning(this, "Ошибка ввода", "Для функций 0x05 и 0x06 можно указать только одно значение!");
+                return;
+            }
+        }
+        toLog(" Данные для записи: " + dataText);
+    }
+
     // Делегирование отправки данных менеджеру
     if (isReadRequest) {
         m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
     } else {
-        m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, count);
+        m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, writeValues);
     }
 
 
-    ui->textEditLog->append("Запрос отправлен. Ожидание ответа...");
+    toLog("Запрос отправлен. Ожидание ответа...");
 }
 
 /**
@@ -258,7 +325,7 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
                              .arg(unit.startAddress())
                              .arg(unit.valueCount());
 
-    ui->textEditLog->append(logMessage);
+    toLog(logMessage);
 
     // Формирование детального списка полученных значений
     QString resultStr;
@@ -287,10 +354,8 @@ void MainWindow::setControlsForOpenPort() {
     ui->btnSendData->setEnabled(true);
     ui->leDeviceAddress->setEnabled(true);
     ui->cbCode->setEnabled(true);
-    ui->leRegisterAddress1->setEnabled(true);
-    ui->leRegisterAddress2->setEnabled(true);
-    ui->leRegistersQty1->setEnabled(true);
-    ui->leRegistersQty2->setEnabled(true);
+    ui->leRegisterAddress->setEnabled(true);
+    ui->leRegistersQty->setEnabled(true);
 }
 
 /**
@@ -309,17 +374,15 @@ void MainWindow::setControlsForClosedPort() {
     ui->btnSendData->setEnabled(false);
     ui->leDeviceAddress->setEnabled(false);
     ui->cbCode->setEnabled(false);
-    ui->leRegisterAddress1->setEnabled(false);
-    ui->leRegisterAddress2->setEnabled(false);
-    ui->leRegistersQty1->setEnabled(false);
-    ui->leRegistersQty2->setEnabled(false);
+    ui->leRegisterAddress->setEnabled(false);
+    ui->leRegistersQty->setEnabled(false);
 }
 
 /**
  * @brief Заполняет виджеты параметров отправки данных начальными значениями.
  */
 void MainWindow::setControlsForSendData() {
-    ui->leDeviceAddress->setText("0x01");
+    ui->leDeviceAddress->setText("1");
     ui->cbCode->clear();
     // addItem(Текст для отображения, Внутренние данные (int))
     ui->cbCode->addItem("01 (0x01) - Чтение дискретных выходов (Read Coils)", 0x01);
@@ -333,10 +396,27 @@ void MainWindow::setControlsForSendData() {
     // Выбираем самую популярную функцию (0x03) по умолчанию
     ui->cbCode->setCurrentIndex(2);
 
-    ui->leRegisterAddress1->setText("0x00");
-    ui->leRegisterAddress2->setText("0x00");
-    ui->leRegistersQty1->setText("0x00");
-    ui->leRegistersQty2->setText("0x01");
+    ui->leRegisterAddress->setText("0");
+    ui->leRegistersQty->setText("1");
+
+    auto updateDataFieldVisibility = [this]() {
+        // Получаем числовое значение выбранного кода функции (0x01, 0x05 и т.д.)
+        int funcCode = ui->cbCode->currentData().toInt();
+
+        // Проверяем, является ли команда командой записи
+        bool isWriteCommand = (funcCode == 0x05 || funcCode == 0x06 ||
+                               funcCode == 0x0F || funcCode == 0x10);
+
+        // Включаем или выключаем видимость поля
+        ui->leData->setVisible(isWriteCommand);
+    };
+
+    connect(ui->cbCode, &QComboBox::currentIndexChanged, this, updateDataFieldVisibility);
+    updateDataFieldVisibility();
+}
+
+void MainWindow::toLog(const QString& msg) {
+    ui->textEditLog->append(msg);
 }
 
 

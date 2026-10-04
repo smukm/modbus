@@ -33,6 +33,7 @@ private:
     void setControlsForSendData();
     void connectToDevice();
     void disconnectFromDevice();
+    void toLog(const QString& msg);
 
 private slots:
     void onApplySettings();

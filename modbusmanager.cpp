@@ -112,28 +112,39 @@ void ModbusManager::sendReadRequest(
  * @param serverAddress Адрес устройства (Slave ID).
  * @param funcCode Код функции Modbus (0x05 или 0x06).
  * @param startAddress Адрес регистра/коилла для записи.
- * @param value Значение, которое необходимо записать.
  */
-void ModbusManager::sendWriteRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, quint16 value) {
+void ModbusManager::sendWriteRequest(
+    quint8 serverAddress,
+    quint8 funcCode,
+    quint16 startAddress,
+    const QVector<quint16> &values)
+{
     if (!isConnected()) {
         emit errorOccurred("Порт не открыт!");
         return;
     }
 
-    QModbusDataUnit::RegisterType type;
-    switch (funcCode) {
-    case 0x05: type = QModbusDataUnit::Coils; break;             // Запись одного дискретного выхода (Coil)
-    case 0x06: type = QModbusDataUnit::HoldingRegisters; break;  // Запись одного регистра хранения
-    // Примечание: функции 0x0F и 0x10 (запись нескольких) требуют передачи массива значений,
-    // в рамках простого UI мы их пока не поддерживаем.
-    default:
-        emit errorOccurred("Неподдерживаемый код функции для записи (поддерживаются только 0x05 и 0x06)");
+    if (values.isEmpty()) {
+        emit errorOccurred("Нет данных для записи!");
         return;
     }
 
-    // Для записи одного значения количество (valueCount) всегда равно 1
-    QModbusDataUnit request(type, startAddress, 1);
-    request.setValue(0, value); // Записываем значение в нулевой (и единственный) элемент
+    QModbusDataUnit::RegisterType type;
+    quint16 count = static_cast<quint16>(values.size());
+    if (funcCode == 0x05 || funcCode == 0x0F) {
+        type = QModbusDataUnit::Coils;
+    } else if (funcCode == 0x06 || funcCode == 0x10) {
+        type = QModbusDataUnit::HoldingRegisters;
+    } else {
+        emit errorOccurred("Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)");
+        return;
+    }
+
+    // Формируем запрос. count берется из размера переданного вектора
+    QModbusDataUnit request(type, startAddress, count);
+    for (int i = 0; i < count; ++i) {
+        request.setValue(i, values[i]);
+    }
 
     m_currentReply = m_modbusDevice->sendWriteRequest(request, serverAddress);
 
@@ -205,12 +216,26 @@ void ModbusManager::onReplyFinished() {
     } else if (m_currentReply->error() == QModbusDevice::ProtocolError) {
         // Специфическая ошибка: устройство ответило, но вернуло Modbus Exception (исключение).
         // Это означает, что запрос был получен, но отвергнут устройством (неверный адрес, функция и т.д.).
+        QString exceptionInfo = "Неизвестная ошибка";
+        if (m_currentReply->rawResult().exceptionCode() == 0x01) {
+            exceptionInfo = "Illegal Function (Функция не поддерживается устройством)";
+        } else if (m_currentReply->rawResult().exceptionCode() == 0x02) {
+            exceptionInfo = "Illegal Data Address (Такого адреса регистра/катушки не существует или он недоступен)";
+        } else if (m_currentReply->rawResult().exceptionCode() == 0x03) {
+            exceptionInfo = "Illegal Data Value (Значение выходит за допустимые пределы)";
+        } else if (m_currentReply->rawResult().exceptionCode() == 0x04) {
+            exceptionInfo = "Slave Device Failure (Внутренняя ошибка устройства)";
+        }
+
         emit errorOccurred(
-            "Устройство отвергло запрос (Modbus Exception).\n"
-            "Проверьте:\n"
-            "1. Адрес устройства (Slave ID)\n"
-            "2. Код функции (0x03 или 0x04?)\n"
-            "3. Адрес регистра (в Modbus он начинается с 0, а не с 40001)"
+            QString("Устройство отвергло запрос (Modbus Exception).\n"
+                    "Код ошибки: %1\n"
+                    "Расшифровка: %2\n\n"
+                    "Что проверить:\n"
+                    "1. Точно ли этот адрес существует в паспорте устройства?\n"
+                    "2. Не перепутали ли вы функцию (0x05 для катушек, 0x06 для числовых регистров)?")
+                .arg(m_currentReply->rawResult().exceptionCode())
+                .arg(exceptionInfo)
             );
     } else {
         // Другие ошибки (например, таймаут ожидания ответа или физический обрыв линии)

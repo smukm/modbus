@@ -19,7 +19,7 @@
      <rect>
       <x>30</x>
       <y>30</y>
-      <width>131</width>
+      <width>181</width>
       <height>22</height>
      </rect>
     </property>
@@ -40,7 +40,7 @@
    <widget class="QPushButton" name="btnApply">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>220</x>
       <y>30</y>
       <width>80</width>
       <height>21</height>
@@ -55,7 +55,7 @@
      <rect>
       <x>30</x>
       <y>80</y>
-      <width>221</width>
+      <width>271</width>
       <height>171</height>
      </rect>
     </property>
@@ -118,7 +118,7 @@
    <widget class="QPushButton" name="btnSendData">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>650</x>
       <y>240</y>
       <width>80</width>
       <height>21</height>
@@ -131,7 +131,7 @@
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>340</x>
       <y>30</y>
       <width>391</width>
       <height>201</height>
@@ -144,24 +144,6 @@
         <string>Адрес устройства SlaveID</string>
        </property>
       </widget>
-     </item>
-     <item row="6" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLineEdit" name="leRegisterAddress1">
-         <property name="placeholderText">
-          <string>0x00</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="leRegisterAddress2">
-         <property name="placeholderText">
-          <string>0x00</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="leDeviceAddress">
@@ -191,24 +173,6 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLineEdit" name="leRegistersQty1">
-         <property name="placeholderText">
-          <string>0x00</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="leRegistersQty2">
-         <property name="placeholderText">
-          <string>0x01</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="cbCode"/>
      </item>
@@ -222,6 +186,20 @@
      <item row="8" column="1">
       <widget class="QTextEdit" name="textEditRecievedData"/>
      </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="leRegisterAddress">
+       <property name="placeholderText">
+        <string>0x00</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="leRegistersQty">
+       <property name="placeholderText">
+        <string>0x00</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QTextEdit" name="textEditLog">
@@ -229,7 +207,7 @@
      <rect>
       <x>30</x>
       <y>340</y>
-      <width>641</width>
+      <width>701</width>
       <height>161</height>
      </rect>
     </property>
@@ -245,6 +223,19 @@
     </property>
     <property name="text">
      <string>Логи</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="leData">
+    <property name="geometry">
+     <rect>
+      <x>342</x>
+      <y>240</y>
+      <width>301</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>значения через запятую (например: 255, 0xFF, или 10, 20, 30)</string>
     </property>
    </widget>
   </widget>

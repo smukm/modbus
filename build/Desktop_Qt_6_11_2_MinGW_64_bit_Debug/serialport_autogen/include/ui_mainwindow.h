@@ -13,7 +13,6 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
-#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
@@ -47,21 +46,18 @@ public:
     QWidget *gridLayoutWidget_2;
     QGridLayout *gridLayout_2;
     QLabel *label_8;
-    QHBoxLayout *horizontalLayout;
-    QLineEdit *leRegisterAddress1;
-    QLineEdit *leRegisterAddress2;
     QLineEdit *leDeviceAddress;
     QLabel *label_11;
     QLabel *label_10;
     QLabel *label_9;
-    QHBoxLayout *horizontalLayout_2;
-    QLineEdit *leRegistersQty1;
-    QLineEdit *leRegistersQty2;
     QComboBox *cbCode;
     QLabel *label_7;
     QTextEdit *textEditRecievedData;
+    QLineEdit *leRegisterAddress;
+    QLineEdit *leRegistersQty;
     QTextEdit *textEditLog;
     QLabel *label_12;
+    QLineEdit *leData;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -74,16 +70,16 @@ public:
         centralwidget->setObjectName("centralwidget");
         cbPorts = new QComboBox(centralwidget);
         cbPorts->setObjectName("cbPorts");
-        cbPorts->setGeometry(QRect(30, 30, 131, 22));
+        cbPorts->setGeometry(QRect(30, 30, 181, 22));
         label = new QLabel(centralwidget);
         label->setObjectName("label");
         label->setGeometry(QRect(30, 10, 41, 14));
         btnApply = new QPushButton(centralwidget);
         btnApply->setObjectName("btnApply");
-        btnApply->setGeometry(QRect(170, 30, 80, 21));
+        btnApply->setGeometry(QRect(220, 30, 80, 21));
         gridLayoutWidget = new QWidget(centralwidget);
         gridLayoutWidget->setObjectName("gridLayoutWidget");
-        gridLayoutWidget->setGeometry(QRect(30, 80, 221, 171));
+        gridLayoutWidget->setGeometry(QRect(30, 80, 271, 171));
         gridLayout = new QGridLayout(gridLayoutWidget);
         gridLayout->setObjectName("gridLayout");
         gridLayout->setContentsMargins(0, 0, 0, 0);
@@ -132,10 +128,10 @@ public:
         label_2->setGeometry(QRect(30, 60, 98, 22));
         btnSendData = new QPushButton(centralwidget);
         btnSendData->setObjectName("btnSendData");
-        btnSendData->setGeometry(QRect(610, 240, 80, 21));
+        btnSendData->setGeometry(QRect(650, 240, 80, 21));
         gridLayoutWidget_2 = new QWidget(centralwidget);
         gridLayoutWidget_2->setObjectName("gridLayoutWidget_2");
-        gridLayoutWidget_2->setGeometry(QRect(300, 30, 391, 201));
+        gridLayoutWidget_2->setGeometry(QRect(340, 30, 391, 201));
         gridLayout_2 = new QGridLayout(gridLayoutWidget_2);
         gridLayout_2->setObjectName("gridLayout_2");
         gridLayout_2->setContentsMargins(0, 0, 0, 0);
@@ -143,21 +139,6 @@ public:
         label_8->setObjectName("label_8");
 
         gridLayout_2->addWidget(label_8, 0, 0, 1, 1);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName("horizontalLayout");
-        leRegisterAddress1 = new QLineEdit(gridLayoutWidget_2);
-        leRegisterAddress1->setObjectName("leRegisterAddress1");
-
-        horizontalLayout->addWidget(leRegisterAddress1);
-
-        leRegisterAddress2 = new QLineEdit(gridLayoutWidget_2);
-        leRegisterAddress2->setObjectName("leRegisterAddress2");
-
-        horizontalLayout->addWidget(leRegisterAddress2);
-
-
-        gridLayout_2->addLayout(horizontalLayout, 6, 1, 1, 1);
 
         leDeviceAddress = new QLineEdit(gridLayoutWidget_2);
         leDeviceAddress->setObjectName("leDeviceAddress");
@@ -179,21 +160,6 @@ public:
 
         gridLayout_2->addWidget(label_9, 2, 0, 1, 1);
 
-        horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setObjectName("horizontalLayout_2");
-        leRegistersQty1 = new QLineEdit(gridLayoutWidget_2);
-        leRegistersQty1->setObjectName("leRegistersQty1");
-
-        horizontalLayout_2->addWidget(leRegistersQty1);
-
-        leRegistersQty2 = new QLineEdit(gridLayoutWidget_2);
-        leRegistersQty2->setObjectName("leRegistersQty2");
-
-        horizontalLayout_2->addWidget(leRegistersQty2);
-
-
-        gridLayout_2->addLayout(horizontalLayout_2, 7, 1, 1, 1);
-
         cbCode = new QComboBox(gridLayoutWidget_2);
         cbCode->setObjectName("cbCode");
 
@@ -209,12 +175,25 @@ public:
 
         gridLayout_2->addWidget(textEditRecievedData, 8, 1, 1, 1);
 
+        leRegisterAddress = new QLineEdit(gridLayoutWidget_2);
+        leRegisterAddress->setObjectName("leRegisterAddress");
+
+        gridLayout_2->addWidget(leRegisterAddress, 6, 1, 1, 1);
+
+        leRegistersQty = new QLineEdit(gridLayoutWidget_2);
+        leRegistersQty->setObjectName("leRegistersQty");
+
+        gridLayout_2->addWidget(leRegistersQty, 7, 1, 1, 1);
+
         textEditLog = new QTextEdit(centralwidget);
         textEditLog->setObjectName("textEditLog");
-        textEditLog->setGeometry(QRect(30, 340, 641, 161));
+        textEditLog->setGeometry(QRect(30, 340, 701, 161));
         label_12 = new QLabel(centralwidget);
         label_12->setObjectName("label_12");
         label_12->setGeometry(QRect(30, 320, 41, 14));
+        leData = new QLineEdit(centralwidget);
+        leData->setObjectName("leData");
+        leData->setGeometry(QRect(342, 240, 301, 22));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -241,16 +220,15 @@ public:
         label_2->setText(QCoreApplication::translate("MainWindow", "\320\235\320\260\321\201\321\202\321\200\320\276\320\271\320\272\320\270", nullptr));
         btnSendData->setText(QCoreApplication::translate("MainWindow", "\320\236\321\202\320\277\321\200\320\260\320\262\320\270\321\202\321\214", nullptr));
         label_8->setText(QCoreApplication::translate("MainWindow", "\320\220\320\264\321\200\320\265\321\201 \321\203\321\201\321\202\321\200\320\276\320\271\321\201\321\202\320\262\320\260 SlaveID", nullptr));
-        leRegisterAddress1->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
-        leRegisterAddress2->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
         leDeviceAddress->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x01", nullptr));
         label_11->setText(QCoreApplication::translate("MainWindow", "\320\232\320\276\320\273\320\270\321\207\320\265\321\201\321\202\320\262\320\276 \321\200\320\265\320\263\320\270\321\201\321\202\321\200\320\276\320\262", nullptr));
         label_10->setText(QCoreApplication::translate("MainWindow", "\320\220\320\264\321\200\320\265\321\201 \321\200\320\265\320\263\320\270\321\201\321\202\321\200\320\260", nullptr));
         label_9->setText(QCoreApplication::translate("MainWindow", "\320\232\320\276\320\264 \321\204\321\203\320\275\320\272\321\206\320\270\320\270", nullptr));
-        leRegistersQty1->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
-        leRegistersQty2->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x01", nullptr));
         label_7->setText(QCoreApplication::translate("MainWindow", "\320\237\320\276\320\273\321\203\321\207\320\265\320\275\320\275\321\213\320\265 \320\264\320\260\320\275\320\275\321\213\320\265:", nullptr));
+        leRegisterAddress->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
+        leRegistersQty->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
         label_12->setText(QCoreApplication::translate("MainWindow", "\320\233\320\276\320\263\320\270", nullptr));
+        leData->setPlaceholderText(QCoreApplication::translate("MainWindow", "\320\267\320\275\320\260\321\207\320\265\320\275\320\270\321\217 \321\207\320\265\321\200\320\265\320\267 \320\267\320\260\320\277\321\217\321\202\321\203\321\216 (\320\275\320\260\320\277\321\200\320\270\320\274\320\265\321\200: 255, 0xFF, \320\270\320\273\320\270 10, 20, 30)", nullptr));
     } // retranslateUi
 
 };
