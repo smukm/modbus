@@ -228,7 +228,7 @@ public:
         leRegisterAddress->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
         leRegistersQty->setPlaceholderText(QCoreApplication::translate("MainWindow", "0x00", nullptr));
         label_12->setText(QCoreApplication::translate("MainWindow", "\320\233\320\276\320\263\320\270", nullptr));
-        leData->setPlaceholderText(QCoreApplication::translate("MainWindow", "\320\267\320\275\320\260\321\207\320\265\320\275\320\270\321\217 \321\207\320\265\321\200\320\265\320\267 \320\267\320\260\320\277\321\217\321\202\321\203\321\216 (\320\275\320\260\320\277\321\200\320\270\320\274\320\265\321\200: 255, 0xFF, \320\270\320\273\320\270 10, 20, 30)", nullptr));
+        leData->setPlaceholderText(QCoreApplication::translate("MainWindow", "\320\267\320\275\320\260\321\207\320\265\320\275\320\270\321\217 \321\207\320\265\321\200\320\265\320\267 \320\267\320\260\320\277\321\217\321\202\321\203\321\216 (\320\275\320\260\320\277\321\200\320\270\320\274\320\265\321\200:  10, 20, 30)", nullptr));
     } // retranslateUi
 
 };

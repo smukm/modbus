@@ -235,7 +235,7 @@
      </rect>
     </property>
     <property name="placeholderText">
-     <string>значения через запятую (например: 255, 0xFF, или 10, 20, 30)</string>
+     <string>значения через запятую (например:  10, 20, 30)</string>
     </property>
    </widget>
   </widget>
