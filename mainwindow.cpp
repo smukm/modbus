@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QModbusReply>
@@ -14,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    createMenu();
 
     m_modbusManager = new ModbusManager(this);
     connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
@@ -56,6 +61,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/**
+ * @brief Создание меню
+ */
+void MainWindow::createMenu() {
+    QMenu *fileMenu = menuBar()->addMenu(tr("&Файл"));
+    QAction *openAction = fileMenu->addAction(tr("&Открыть"));
+    openAction->setShortcut(QKeySequence::Open);
+    fileMenu->addSeparator();
+    QAction *exitAction = fileMenu->addAction(tr("&Выход"));
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
+}
 /**
  * @brief Сканирует систему и заполняет выпадающий список доступными COM-портами.
  * Блокирует кнопку подключения, если порты не найдены.

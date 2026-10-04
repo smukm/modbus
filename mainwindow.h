@@ -34,6 +34,7 @@ private:
     void connectToDevice();
     void disconnectFromDevice();
     void toLog(const QString& msg);
+    void createMenu();
 
 private slots:
     void onApplySettings();

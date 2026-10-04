@@ -19,7 +19,7 @@
      <rect>
       <x>30</x>
       <y>30</y>
-      <width>181</width>
+      <width>191</width>
       <height>22</height>
      </rect>
     </property>
@@ -29,18 +29,18 @@
      <rect>
       <x>30</x>
       <y>10</y>
-      <width>41</width>
-      <height>14</height>
+      <width>91</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Порты</string>
+     <string>Доступные порты</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btnApply">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>230</x>
       <y>30</y>
       <width>80</width>
       <height>21</height>
@@ -50,76 +50,11 @@
      <string>Открыть</string>
     </property>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>80</y>
-      <width>271</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="1">
-      <widget class="QComboBox" name="cbStopBits"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Стоп-биты</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbParity"/>
-     </item>
-     <item row="0" column="1">
-      <widget class="QComboBox" name="cbBaudRate"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Четность</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Скорость:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Биты данных</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="cbDataBits"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>60</y>
-      <width>98</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Настройки</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btnSendData">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>240</y>
+      <x>690</x>
+      <y>30</y>
       <width>80</width>
       <height>21</height>
      </rect>
@@ -128,87 +63,13 @@
      <string>Отправить</string>
     </property>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>30</y>
-      <width>391</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Адрес устройства SlaveID</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="leDeviceAddress">
-       <property name="placeholderText">
-        <string>0x01</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>Количество регистров</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Адрес регистра</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Код функции</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbCode"/>
-     </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Полученные данные:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QTextEdit" name="textEditRecievedData"/>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="leRegisterAddress">
-       <property name="placeholderText">
-        <string>0x00</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QLineEdit" name="leRegistersQty">
-       <property name="placeholderText">
-        <string>0x00</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QTextEdit" name="textEditLog">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>340</y>
-      <width>701</width>
-      <height>161</height>
+      <width>741</width>
+      <height>221</height>
      </rect>
     </property>
    </widget>
@@ -228,15 +89,167 @@
    <widget class="QLineEdit" name="leData">
     <property name="geometry">
      <rect>
-      <x>342</x>
-      <y>240</y>
-      <width>301</width>
+      <x>340</x>
+      <y>30</y>
+      <width>341</width>
       <height>22</height>
      </rect>
     </property>
     <property name="placeholderText">
      <string>значения через запятую (например:  10, 20, 30)</string>
     </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>60</y>
+      <width>281</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Настройки порта</string>
+    </property>
+    <widget class="QWidget" name="gridLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>261</width>
+       <height>171</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="3" column="1">
+       <widget class="QComboBox" name="cbStopBits"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Стоп-биты</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbParity"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cbBaudRate"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Четность</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Скорость</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Биты данных</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cbDataBits"/>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>60</y>
+      <width>431</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Команда</string>
+    </property>
+    <widget class="QWidget" name="gridLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>411</width>
+       <height>201</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Адрес устройства SlaveID</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="leDeviceAddress">
+        <property name="placeholderText">
+         <string>0x01</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Количество регистров</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Адрес регистра</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Код функции</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbCode"/>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Полученные данные:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QTextEdit" name="textEditRecievedData"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="leRegisterAddress">
+        <property name="placeholderText">
+         <string>0x00</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="leRegistersQty">
+        <property name="placeholderText">
+         <string>0x00</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -251,6 +264,22 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>cbPorts</tabstop>
+  <tabstop>btnApply</tabstop>
+  <tabstop>cbBaudRate</tabstop>
+  <tabstop>cbDataBits</tabstop>
+  <tabstop>cbParity</tabstop>
+  <tabstop>cbStopBits</tabstop>
+  <tabstop>leDeviceAddress</tabstop>
+  <tabstop>cbCode</tabstop>
+  <tabstop>leRegisterAddress</tabstop>
+  <tabstop>leRegistersQty</tabstop>
+  <tabstop>leData</tabstop>
+  <tabstop>btnSendData</tabstop>
+  <tabstop>textEditLog</tabstop>
+  <tabstop>textEditRecievedData</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
