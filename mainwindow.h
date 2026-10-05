@@ -31,6 +31,7 @@ private:
     QStandardItemModel* m_receivedDataModel;
     QStandardItemModel *m_logModel;
     QTimer *m_pollingTimer;
+    QHash<QPair<int, QString>, int> m_addressToRowMap;
 
     void setPorts();
     void fillSettings();

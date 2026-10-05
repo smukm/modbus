@@ -79,6 +79,11 @@ void ModbusManager::sendReadRequest(
         return;
     };
 
+    if (m_currentReply) {
+        m_currentReply->deleteLater();
+        m_currentReply = nullptr;
+    }
+
     QModbusDataUnit::RegisterType type;
     switch (funcCode) {
     case 0x01: type = QModbusDataUnit::Coils; break;
@@ -110,7 +115,7 @@ void ModbusManager::sendReadRequest(
 /**
  * @brief Отправляет запрос на запись данных в устройство Modbus.
  * @param serverAddress Адрес устройства (Slave ID).
- * @param funcCode Код функции Modbus (0x05 или 0x06).
+ * @param funcCode Код функции Modbus (0x05, 0x06, 0x0F или 0x10).
  * @param startAddress Адрес регистра/коилла для записи.
  */
 void ModbusManager::sendWriteRequest(
@@ -127,6 +132,11 @@ void ModbusManager::sendWriteRequest(
     if (values.isEmpty()) {
         emit errorOccurred("Нет данных для записи!");
         return;
+    }
+
+    if (m_currentReply) {
+        m_currentReply->deleteLater();
+        m_currentReply = nullptr;
     }
 
     QModbusDataUnit::RegisterType type;
@@ -225,6 +235,8 @@ void ModbusManager::onReplyFinished() {
             exceptionInfo = "Illegal Data Value (Значение выходит за допустимые пределы)";
         } else if (m_currentReply->rawResult().exceptionCode() == 0x04) {
             exceptionInfo = "Slave Device Failure (Внутренняя ошибка устройства)";
+        } else if (m_currentReply->rawResult().exceptionCode() == 0x06) {
+            exceptionInfo = "Slave Device Busy (Устройство занято)";
         }
 
         emit errorOccurred(

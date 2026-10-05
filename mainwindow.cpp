@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     // Настройка таймера для периодического опроса
-    m_pollingTimer->setInterval(1000); // Интервал опроса в миллисекундах (1 секунда)
+    m_pollingTimer->setInterval(2000); // Интервал опроса в миллисекундах (2 секунды)
     connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
 
     createMenu();
@@ -198,12 +198,10 @@ void MainWindow::onExecuteCommand() {
         return;
     }
 
-    //m_receivedDataModel->clear();
-
     // Если таймер уже запущен, кнопка работает как "Стоп"
     if (m_pollingTimer->isActive()) {
         stopPolling();
-        return; // Прерываем, НЕ отправляя запрос
+        return; // Прерываем, не отправляя запрос
     }
 
     // Если таймер не запущен
@@ -223,7 +221,7 @@ void MainWindow::stopPolling() {
     if (m_pollingTimer->isActive()) {
         m_pollingTimer->stop();
         ui->cbPolling->setChecked(false); // Снимаем галочку
-        ui->btnSendData->setText("Отправить"); // Возвращаем исходный текст
+        ui->btnSendData->setText("Выполнить"); // Возвращаем исходный текст
         toLog("Периодический опрос остановлен");
         setCommandControlsStatus(true);
 
@@ -424,13 +422,16 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
                                .arg(regValue, 4, 16, QChar('0')).toUpper();
 
         // Ищем существующую строку с тем же адресом и типом
-        int existingRow = findRowByAddressAndType(regAddress, regType);
+        //int existingRow = findRowByAddressAndType(regAddress, regType);
+        QPair<int, QString> key = {regAddress, regType};
+        auto it = m_addressToRowMap.find(key);
 
-        if (existingRow >= 0) {
+        if (it != m_addressToRowMap.end()) {
             // Строка найдена — обновляем только значение (столбец 1)
-            m_receivedDataModel->item(existingRow, 1)->setText(valueStr);
+            m_receivedDataModel->item(it.value(), 1)->setText(valueStr);
         } else {
             // Добавляем новую строку
+            int newRow = m_receivedDataModel->rowCount();
             QString regAddressStr = QString("%1 (0x%2)")
                                         .arg(regAddress)
                                         .arg(regAddress, 4, 16, QChar('0')).toUpper(); // ИСПРАВЛЕНО: '0' вместо 'O'
@@ -442,6 +443,7 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
             QStandardItem* typeItem = new QStandardItem(regType);
 
             m_receivedDataModel->appendRow({addrItem, valueItem, typeItem});
+            m_addressToRowMap.insert(key, newRow); // Кэшируем
         }
     }
     // Автоматическая прокрутка к последнему элементу
@@ -586,10 +588,12 @@ void MainWindow::toLog(const QString& msg, bool isError ) {
     }
     m_logModel->appendRow(item);
 
+    int rowCount = m_logModel->rowCount();
     const int MAX_LOG_ENTRIES = 1000;
-    while (m_logModel->rowCount() > MAX_LOG_ENTRIES) {
-         m_logModel->removeRows(0, MAX_LOG_ENTRIES / 2);
-     }
+    if (rowCount > MAX_LOG_ENTRIES) {
+        int rowsToRemove = rowCount - MAX_LOG_ENTRIES / 2;
+        m_logModel->removeRows(0, rowsToRemove);
+    }
 
     // Автоматическая прокрутка к последней записи
     ui->lvLog->scrollToBottom();
