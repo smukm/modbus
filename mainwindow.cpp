@@ -7,6 +7,7 @@
 #include <QSerialPortInfo>
 #include <QModbusReply>
 #include <QMessageBox>
+#include <QDateTime>
 
 /**
  * @brief Конструктор главного окна приложения.
@@ -432,7 +433,9 @@ void MainWindow::setControlsForSendData() {
 }
 
 void MainWindow::toLog(const QString& msg) {
-    ui->textEditLog->append(msg);
+
+    QString t = QDateTime::currentDateTime().toString("dd-mm-yyyy hh:mm:ss:zz");
+    ui->textEditLog->append(QString("%1 %2").arg(t, msg));
 }
 
 
