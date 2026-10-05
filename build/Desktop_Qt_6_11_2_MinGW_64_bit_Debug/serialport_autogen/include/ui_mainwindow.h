@@ -34,7 +34,7 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QWidget *horizontalLayoutWidget_2;
+    QHBoxLayout *horizontalLayout_5;
     QHBoxLayout *horizontalLayout_3;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
@@ -82,23 +82,22 @@ public:
         MainWindow->resize(800, 600);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
-        horizontalLayoutWidget_2 = new QWidget(centralwidget);
-        horizontalLayoutWidget_2->setObjectName("horizontalLayoutWidget_2");
-        horizontalLayoutWidget_2->setGeometry(QRect(0, 0, 781, 541));
-        horizontalLayout_3 = new QHBoxLayout(horizontalLayoutWidget_2);
+        horizontalLayout_5 = new QHBoxLayout(centralwidget);
+        horizontalLayout_5->setObjectName("horizontalLayout_5");
+        horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(15);
         horizontalLayout_3->setObjectName("horizontalLayout_3");
-        horizontalLayout_3->setContentsMargins(5, 0, 0, 0);
+        horizontalLayout_3->setContentsMargins(5, -1, -1, -1);
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
-        cbPorts = new QComboBox(horizontalLayoutWidget_2);
+        cbPorts = new QComboBox(centralwidget);
         cbPorts->setObjectName("cbPorts");
 
         horizontalLayout->addWidget(cbPorts);
 
-        btnApply = new QPushButton(horizontalLayoutWidget_2);
+        btnApply = new QPushButton(centralwidget);
         btnApply->setObjectName("btnApply");
 
         horizontalLayout->addWidget(btnApply);
@@ -107,7 +106,7 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        gbPortSettings = new QGroupBox(horizontalLayoutWidget_2);
+        gbPortSettings = new QGroupBox(centralwidget);
         gbPortSettings->setObjectName("gbPortSettings");
         gridLayoutWidget = new QWidget(gbPortSettings);
         gridLayoutWidget->setObjectName("gridLayoutWidget");
@@ -158,7 +157,7 @@ public:
 
         verticalLayout->addWidget(gbPortSettings);
 
-        gbCommand = new QGroupBox(horizontalLayoutWidget_2);
+        gbCommand = new QGroupBox(centralwidget);
         gbCommand->setObjectName("gbCommand");
         gridLayoutWidget_2 = new QWidget(gbCommand);
         gridLayoutWidget_2->setObjectName("gridLayoutWidget_2");
@@ -213,12 +212,12 @@ public:
         verticalLayout_4->setObjectName("verticalLayout_4");
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setObjectName("horizontalLayout_4");
-        leData = new QLineEdit(horizontalLayoutWidget_2);
+        leData = new QLineEdit(centralwidget);
         leData->setObjectName("leData");
 
         horizontalLayout_4->addWidget(leData);
 
-        btnSendData = new QPushButton(horizontalLayoutWidget_2);
+        btnSendData = new QPushButton(centralwidget);
         btnSendData->setObjectName("btnSendData");
 
         horizontalLayout_4->addWidget(btnSendData);
@@ -227,7 +226,7 @@ public:
 
         verticalLayout_4->addLayout(horizontalLayout_4);
 
-        cbPolling = new QCheckBox(horizontalLayoutWidget_2);
+        cbPolling = new QCheckBox(centralwidget);
         cbPolling->setObjectName("cbPolling");
 
         verticalLayout_4->addWidget(cbPolling);
@@ -240,28 +239,31 @@ public:
 
         verticalLayout_3 = new QVBoxLayout();
         verticalLayout_3->setObjectName("verticalLayout_3");
-        label_2 = new QLabel(horizontalLayoutWidget_2);
+        label_2 = new QLabel(centralwidget);
         label_2->setObjectName("label_2");
 
         verticalLayout_3->addWidget(label_2);
 
-        tvReceivedData = new QTableView(horizontalLayoutWidget_2);
+        tvReceivedData = new QTableView(centralwidget);
         tvReceivedData->setObjectName("tvReceivedData");
 
         verticalLayout_3->addWidget(tvReceivedData);
 
-        label_12 = new QLabel(horizontalLayoutWidget_2);
+        label_12 = new QLabel(centralwidget);
         label_12->setObjectName("label_12");
 
         verticalLayout_3->addWidget(label_12);
 
-        lvLog = new QListView(horizontalLayoutWidget_2);
+        lvLog = new QListView(centralwidget);
         lvLog->setObjectName("lvLog");
 
         verticalLayout_3->addWidget(lvLog);
 
 
         horizontalLayout_3->addLayout(verticalLayout_3);
+
+
+        horizontalLayout_5->addLayout(horizontalLayout_3);
 
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);

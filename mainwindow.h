@@ -2,12 +2,10 @@
 #define MAINWINDOW_H
 
 #include "modbusmanager.h"
+#include "logmanager.h"
+#include "registerdatamodel.h"
+#include "uicontroller.h"
 #include <QMainWindow>
-#include <QModbusRtuSerialClient>
-#include <QModbusDataUnit>
-#include <QModbusReply>
-#include <QStringListModel>
-#include <QStandardItemModel>
 #include <QTimer>
 
 
@@ -28,29 +26,21 @@ public:
 private:
     Ui::MainWindow *ui;
     ModbusManager* m_modbusManager;
-    QStandardItemModel* m_receivedDataModel;
-    QStandardItemModel *m_logModel;
+    LogManager* m_logManager;
+    RegisterDataModel* m_registerModel;
+    UiController* m_uiController; // Helper
     QTimer *m_pollingTimer;
-    QHash<QPair<int, QString>, int> m_addressToRowMap;
 
     void setPorts();
     void fillSettings();
-    void setControlsForOpenPort();
-    void setControlsForClosedPort();
-    void setControlsForSendData();
-    void setCommandControlsStatus(bool status);
-    void connectToDevice();
     void sendData();
     void stopPolling();
-    void disconnectFromDevice();
-    void toLog(const QString& msg, bool isError = false);
     void createMenu();
-    int findRowByAddressAndType(int address, const QString &regType);
 
 private slots:
     void onApplySettings();
     void onExecuteCommand();
-    void onModbusDataReceived(const QModbusDataUnit &unit);
     void onPollingTimeout();
+    void onLogAdded();
 };
 #endif // MAINWINDOW_H

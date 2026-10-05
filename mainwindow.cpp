@@ -1,13 +1,12 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "modbusvalidator.h"
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
 #include <QSerialPort>
 #include <QSerialPortInfo>
-#include <QModbusReply>
 #include <QMessageBox>
-#include <QDateTime>
 
 /**
  * @brief Конструктор главного окна приложения.
@@ -17,36 +16,32 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_modbusManager(new ModbusManager(this))
-    , m_receivedDataModel(new QStandardItemModel(this))
-    , m_logModel(new QStandardItemModel(this))
     , m_pollingTimer(new QTimer(this))
+    , m_logManager(new LogManager(this))
+    , m_registerModel(new RegisterDataModel(this))
+    , m_uiController(new UiController(ui)) // Инициализация контроллера UI
 {
     ui->setupUi(this);
 
-    m_receivedDataModel->setColumnCount(3);
-    m_receivedDataModel->setHorizontalHeaderLabels({
-        "Адрес регистра",
-        "Значение",
-        "Тип регистра"
-    });
-    ui->tvReceivedData->setModel(m_receivedDataModel);
-    ui->lvLog->setModel(m_logModel);
+    // Инициализация TableView для отображения данных
+    ui->tvReceivedData->setModel(m_registerModel);
 
+    // Инициализация ListView для отображения логов
+    ui->lvLog->setModel(m_logManager);
+    connect(m_logManager, &LogManager::logAdded, this, &MainWindow::onLogAdded);
 
     // Настройка таймера для периодического опроса
     m_pollingTimer->setInterval(2000); // Интервал опроса в миллисекундах (2 секунды)
     connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
 
-    createMenu();
-
     connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
-        toLog("✅ Modbus: Порт успешно подключен.");
-        setControlsForOpenPort();
+        m_logManager->addLog("✅ Modbus: Порт успешно подключен.");
+        m_uiController->setConnectedState();
     });
 
     connect(m_modbusManager, &ModbusManager::disconnected, this, [this]() {
-        toLog("⭕ Modbus: Порт отключен.");
-        setControlsForClosedPort();
+        m_logManager->addLog("⭕ Modbus: Порт отключен.");
+        m_uiController->setDisconnectedState();
     });
 
     connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
@@ -60,12 +55,16 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     // Подключение сигнала получения данных к специализированному слоту обработки
-    connect(m_modbusManager, &ModbusManager::dataReceived, this, &MainWindow::onModbusDataReceived);
+    connect(m_modbusManager, &ModbusManager::dataReceived, this, [this](const QModbusDataUnit &unit) {
+        m_registerModel->updateData(unit);
+        m_logManager->addLog("Данные успешно получены и обновлены в таблице.");
+    });
 
     // Первичная инициализация элементов интерфейса
+    createMenu();
     fillSettings();
-    setControlsForSendData();
-    setControlsForClosedPort();
+    m_uiController->initializeCommandWidgets();
+    m_uiController->setDisconnectedState();
     setPorts();
 
     // Подключение кнопок интерфейса к слотам
@@ -95,6 +94,7 @@ void MainWindow::createMenu() {
     QAction *exitAction = fileMenu->addAction(tr("&Выход"));
     connect(exitAction, &QAction::triggered, this, &QWidget::close);
 }
+
 /**
  * @brief Сканирует систему и заполняет выпадающий список доступными COM-портами.
  * Блокирует кнопку подключения, если порты не найдены.
@@ -115,8 +115,6 @@ void MainWindow::setPorts() {
             if (!info.description().isEmpty()) {
                 displayText += QString(" (%1)").arg(info.description());
             }
-
-            // addItem(Текст для отображения, Данные для внутреннего использования)
             ui->cbPorts->addItem(displayText, info.portName());
         }
         ui->cbPorts->setEnabled(true);
@@ -178,7 +176,7 @@ void MainWindow::onApplySettings() {
     if (m_modbusManager->isConnected()) {
         m_modbusManager->disconnectFromDevice();
     } else {
-        toLog("Попытка подключения к " + ui->cbPorts->currentData().toString());
+        m_logManager->addLog("Попытка подключения к " + ui->cbPorts->currentData().toString());
         ModbusConnectionSettings settings = {
             .portName = ui->cbPorts->currentData().toString(),
             .baudRate = ui->cbBaudRate->currentData().toInt(),
@@ -201,16 +199,15 @@ void MainWindow::onExecuteCommand() {
     // Если таймер уже запущен, кнопка работает как "Стоп"
     if (m_pollingTimer->isActive()) {
         stopPolling();
-        return; // Прерываем, не отправляя запрос
+        return;
     }
 
     // Если таймер не запущен
     if (ui->cbPolling->isChecked()) {
         // Запускаем периодический опрос
         m_pollingTimer->start();
-        ui->btnSendData->setText("Стоп"); // Меняем текст кнопки
-        toLog("Периодический опрос запущен");
-        setCommandControlsStatus(false);
+        m_uiController->setPollingActiveState(true);
+        m_logManager->addLog("Периодический опрос запущен");
     }
 
     // Отправляем запрос (сразу для периодического или одиночный)
@@ -220,11 +217,10 @@ void MainWindow::onExecuteCommand() {
 void MainWindow::stopPolling() {
     if (m_pollingTimer->isActive()) {
         m_pollingTimer->stop();
-        ui->cbPolling->setChecked(false); // Снимаем галочку
-        ui->btnSendData->setText("Выполнить"); // Возвращаем исходный текст
-        toLog("Периодический опрос остановлен");
-        setCommandControlsStatus(true);
-
+        ui->cbPolling->setChecked(false);
+        ui->btnSendData->setText("Выполнить");
+        m_uiController->setPollingActiveState(false); // Делегируем изменение UI
+        m_logManager->addLog("Периодический опрос остановлен");
     }
 }
 
@@ -237,238 +233,69 @@ void MainWindow::sendData() {
         return;
     }
 
-    // Парсер для 8-битных значений (только для адреса устройства)
-    // base = 0 позволяет автоматически определять систему счисления:
-    // "0xFF" -> HEX, "0" -> OCT, "255" -> DEC
-    auto parseByte = [](const QString &text, bool &ok) -> quint8 {
-        int val = text.trimmed().toInt(&ok, 0);
-        if (!ok || val < 0 || val > 255) {
-            ok = false;
-            return 0;
-        }
-        return static_cast<quint8>(val);
-    };
-    // Парсер для 16-битных значений (для адресов регистров и количества)
-    auto parseWord = [](const QString &text, bool &ok) -> quint16 {
-        int val = text.trimmed().toInt(&ok, 0);
-        if (!ok || val < 0 || val > 65535) {
-            ok = false;
-            return 0;
-        }
-        return static_cast<quint16>(val);
-    };
-    bool ok;
+    // Парсинг базовых значений из UI (с минимальной проверкой на пустоту)
+    bool okAddr, okQty, okDev;
+    quint8 deviceAddr = ui->leDeviceAddress->text().trimmed().toInt(&okDev, 0);
+    quint8 funcCode = static_cast<quint8>(ui->cbCode->currentData().toInt());
+    quint16 startAddress = ui->leRegisterAddress->text().trimmed().toInt(&okAddr, 0);
+    quint16 count = ui->leRegistersQty->text().trimmed().toInt(&okQty, 0);
 
-    // Парсинг и валидация полей ввода
-    quint8 deviceAddr = parseByte(ui->leDeviceAddress->text(), ok);
-    if (!ok) {
-        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (ожидается 0-255 или 0x00-0xFF)!");
+    if (!okDev || deviceAddr > 255) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (0-255)!");
         stopPolling();
         return;
     }
-
-    quint8 funcCode = static_cast<quint8>(ui->cbCode->currentData().toInt());
-
-    bool okAddr, okQty;
-    quint16 startAddress = parseWord(ui->leRegisterAddress->text(), okAddr);
-    quint16 count  = parseWord(ui->leRegistersQty->text(), okQty);
-
-    if (!okAddr) {
+    if (!okAddr || startAddress > 65535) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра (0-65535)!");
         stopPolling();
         return;
     }
-    if (!okQty) {
+    if (!okQty || count < 1 || count > 65535) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректное количество регистров (1-65535)!");
         stopPolling();
         return;
     }
+    m_logManager->addLog(QString("%1:\n Адрес устройства: %2, адрес регистра: %3, кол-во: %4")
+                             .arg(ui->cbCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
 
-    toLog(QString("%1:\n Адрес устройства: %2, адрес регистра: %3, кол-во регистров: %4")
-              .arg(ui->cbCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
-
-    QVector<quint16> writeValues;
-
-    // Определение типа запроса (чтение или запись) на основе кода функции
-    bool isReadRequest = true;
-
-    switch (funcCode) {
-    case 0x01:case 0x02:case 0x03:case 0x04:
-        // Это команды чтения, isReadRequest остается true
-        break;
-    case 0x05:case 0x06: case 0x0F: case 0x10:
-        // Это команды записи одного элемента
-        isReadRequest = false;
-        break;
-    default:
-        QMessageBox::warning(this, "Ошибка", "Данный код функции не поддерживается в этом примере");
+    // Делегируем сложную валидацию специализированному классу
+    ValidationResult basicCheck = ModbusValidator::validateBasicParams(deviceAddr, funcCode, startAddress, count);
+    if (!basicCheck.isValid) {
+        QMessageBox::warning(this, "Ошибка валидации", basicCheck.errorMessage);
         stopPolling();
         return;
     }
 
-    // валидация данных для записи
+    bool isReadRequest = (funcCode == 0x01 || funcCode == 0x02 || funcCode == 0x03 || funcCode == 0x04);
+    QVector<quint16> writeValues;
+
+    // Валидация данных для записи
     if (!isReadRequest) {
-        QString dataText = ui->leData->text().trimmed();
-        if (dataText.isEmpty()) {
-            QMessageBox::warning(this, "Ошибка ввода", "Введите значение для записи!");
+        ValidationResult writeCheck = ModbusValidator::validateWriteData(funcCode, ui->leData->text(), writeValues);
+        if (!writeCheck.isValid) {
+            QMessageBox::warning(this, "Ошибка ввода", writeCheck.errorMessage);
             stopPolling();
             return;
         }
-        // парсим строку с данными
-        const QStringList parts = dataText.split(',', Qt::SkipEmptyParts);
-        for (const QString &part : parts) {
-            bool valOk;
-            // base = 0 автоматически распознает "0xFF" как HEX, "0" как OCT, остальные как DEC
-            int val = part.trimmed().toInt(&valOk, 0);
 
-            if (!valOk || val < 0 || val > 0xFFFF) { // Проверка на диапазон 16-битного значения
-                QMessageBox::warning(this, "Ошибка ввода",
-                                     QString("Некорректное значение для записи: '%1'\nОжидается число от 0 до 65535 (или 0x0000-0xFFFF)").arg(part));
-                stopPolling();
-                return;
-            }
-
-            // Специальная проверка для дискретных выходов (COILS)
-            if (funcCode == 0x05 || funcCode == 0x0F) {
-                // Modbus требует строго 0x0000 (OFF) или 0xFF00 (ON).
-                // Некоторые устройства отвергают значение "1", хотя оно логично.
-                if (val != 0 && val != 1 && val != 0xFF00 && val != 65280) {
-                    QMessageBox::warning(this, "Ошибка ввода",
-                                         QString("Для функций 0x05/0x0F (Coils) допустимы только значения:\n"
-                                                 "0 (или 0x00) — для выключения (OFF)\n"
-                                                 "65280 (или 0xFF00) — для включения (ON)\n"
-                                                 "Вы ввели: %1").arg(val));
-                    stopPolling();
-                    return;
-                }
-                // Приводим 1 к стандартному 0xFF00
-                if (val == 1) {
-                    val = 0xFF00;
-                }
-            }
-            writeValues.append(static_cast<quint16>(val));
+        // Логика корректировки count при несовпадении количества введенных значений
+        if ((funcCode == 0x0F || funcCode == 0x10) && writeValues.size() != count) {
+            m_logManager->addLog(QString("Количество введенных значений (%1) не совпадает с указанным (%2).\nБудет записано %1 значений.")
+                                     .arg(writeValues.size()).arg(count), true);
+            count = static_cast<quint16>(writeValues.size());
         }
 
-        // Проверка соответствия количества
-        if (funcCode == 0x0F || funcCode == 0x10) {
-            if (writeValues.size() != count) {
-                toLog(
-                    QString("Количество введенных значений (%1) не совпадает с указанным количеством (%2).\nБудет записано %3 значений.")
-                                         .arg(writeValues.size()).arg(count).arg(writeValues.size())
-                    ,true);
-                count = static_cast<quint16>(writeValues.size());
-            }
-        } else {
-            if (writeValues.size() > 1) {
-                QMessageBox::warning(this, "Ошибка ввода", "Для функций 0x05 и 0x06 можно указать только одно значение!");
-                stopPolling();
-                return;
-            }
-        }
-        toLog(" Данные для записи: " + dataText);
+        m_logManager->addLog(" Данные для записи: " + ui->leData->text().trimmed());
     }
 
-    // Делегирование отправки данных менеджеру
+    // Отправка запроса
     if (isReadRequest) {
         m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
     } else {
         m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, writeValues);
     }
 
-
-    toLog("Запрос отправлен. Ожидание ответа...");
-}
-
-/**
- * @brief Слот обработки успешного ответа от устройства Modbus.
- * Форматирует полученные данные и выводит их в лог и поле результатов.
- */
-void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
-    QString regType;
-    switch (unit.registerType()) {
-    case QModbusDataUnit::RegisterType::HoldingRegisters:
-        regType = "Holding Registers";
-        break;
-    case QModbusDataUnit::RegisterType::InputRegisters:
-        regType = "Input Registers";
-        break;
-    case QModbusDataUnit::RegisterType::DiscreteInputs:
-        regType = "Discrete Inputs";
-        break;
-    case QModbusDataUnit::RegisterType::Coils:
-        regType = "Coils";
-        break;
-    default:
-        regType = "Unknown type";
-    }
-
-    // Формирование сводного сообщения об успехе
-    QString logMessage = QString("Успешный ответ Modbus!\n"
-                                 "Тип регистра: %1\n"
-                                 "Начальный адрес: %2\n"
-                                 "Количество значений: %3")
-                             .arg(regType)
-                             .arg(unit.startAddress())
-                             .arg(unit.valueCount());
-
-    toLog(logMessage);
-
-    // Добавление каждой записи в таблицу
-    for (uint i = 0; i < unit.valueCount(); ++i) {
-        int regAddress = unit.startAddress() + static_cast<int>(i);
-        quint16 regValue = unit.value(i);
-        QString valueStr = QString("%1 (0x%2)")
-                               .arg(regValue)
-                               .arg(regValue, 4, 16, QChar('0')).toUpper();
-
-        // Ищем существующую строку с тем же адресом и типом
-        //int existingRow = findRowByAddressAndType(regAddress, regType);
-        QPair<int, QString> key = {regAddress, regType};
-        auto it = m_addressToRowMap.find(key);
-
-        if (it != m_addressToRowMap.end()) {
-            // Строка найдена — обновляем только значение (столбец 1)
-            m_receivedDataModel->item(it.value(), 1)->setText(valueStr);
-        } else {
-            // Добавляем новую строку
-            int newRow = m_receivedDataModel->rowCount();
-            QString regAddressStr = QString("%1 (0x%2)")
-                                        .arg(regAddress)
-                                        .arg(regAddress, 4, 16, QChar('0')).toUpper(); // ИСПРАВЛЕНО: '0' вместо 'O'
-
-            QStandardItem* addrItem = new QStandardItem(regAddressStr);
-            addrItem->setData(regAddress, Qt::UserRole); // Сохраняем адрес как данные
-
-            QStandardItem* valueItem = new QStandardItem(valueStr);
-            QStandardItem* typeItem = new QStandardItem(regType);
-
-            m_receivedDataModel->appendRow({addrItem, valueItem, typeItem});
-            m_addressToRowMap.insert(key, newRow); // Кэшируем
-        }
-    }
-    // Автоматическая прокрутка к последнему элементу
-    //ui->tvReceivedData->scrollToBottom();
-}
-
-/**
- * @brief Ищет в модели строку с указанным адресом регистра и типом.
- * @param address Адрес регистра для поиска.
- * @param regType Тип регистра для поиска.
- * @return Индекс строки, если найдена; -1 в противном случае.
- */
-int MainWindow::findRowByAddressAndType(int address, const QString &regType) {
-    for (int row = 0; row < m_receivedDataModel->rowCount(); ++row) {
-        QStandardItem* addrItem = m_receivedDataModel->item(row, 0);
-        QStandardItem* typeItem = m_receivedDataModel->item(row, 2);
-
-        if (addrItem && typeItem) {
-            int storedAddress = addrItem->data(Qt::UserRole).toInt();
-            if (storedAddress == address && typeItem->text() == regType) {
-                return row;
-            }
-        }
-    }
-    return -1;
+    m_logManager->addLog("Запрос отправлен. Ожидание ответа...");
 }
 
 /**
@@ -481,122 +308,15 @@ void MainWindow::onPollingTimeout() {
     } else {
         m_pollingTimer->stop();
         ui->cbPolling->setChecked(false);
-        toLog("Опрос остановлен: порт отключен");
+        m_logManager->addLog("Опрос остановлен: порт отключен");
         stopPolling();
     }
 }
 
-/**
- * @brief Блокирует элементы изменения настроек и активирует элементы отправки данных.
- * Вызывается при успешном подключении.
- */
-void MainWindow::setControlsForOpenPort() {
-    ui->btnApply->setText("Закрыть");
-    ui->cbPorts->setEnabled(false);
-    ui->cbBaudRate->setEnabled(false);
-    ui->cbDataBits->setEnabled(false);
-    ui->cbParity->setEnabled(false);
-    ui->cbStopBits->setEnabled(false);
-
-    ui->btnSendData->setEnabled(true);
-    ui->leDeviceAddress->setEnabled(true);
-    ui->cbCode->setEnabled(true);
-    ui->leRegisterAddress->setEnabled(true);
-    ui->leRegistersQty->setEnabled(true);
-    ui->cbPolling->setEnabled(true);
-}
-
-/**
- * @brief Разблокирует элементы изменения настроек и деактивирует отправку данных.
- * Вызывается при отключении от устройства.
- */
-void MainWindow::setControlsForClosedPort() {
-    ui->btnApply->setEnabled(true);
-    ui->btnApply->setText("Открыть");
-    ui->cbPorts->setEnabled(true);
-    ui->cbBaudRate->setEnabled(true);
-    ui->cbDataBits->setEnabled(true);
-    ui->cbParity->setEnabled(true);
-    ui->cbStopBits->setEnabled(true);
-
-    ui->btnSendData->setEnabled(false);
-    ui->leDeviceAddress->setEnabled(false);
-    ui->cbCode->setEnabled(false);
-    ui->leRegisterAddress->setEnabled(false);
-    ui->leRegistersQty->setEnabled(false);
-
-    ui->cbPolling->setEnabled(false);
-    ui->cbPolling->setChecked(false);
-    m_pollingTimer->stop();
-}
-
-/**
- * @brief Заполняет виджеты параметров отправки данных начальными значениями.
- */
-void MainWindow::setControlsForSendData() {
-    ui->leDeviceAddress->setText("1");
-    ui->cbCode->clear();
-    // addItem(Текст для отображения, Внутренние данные (int))
-    ui->cbCode->addItem("01 (0x01) - Чтение дискретных выходов (Read Coils)", 0x01);
-    ui->cbCode->addItem("02 (0x02) - Чтение дискретных входов (Read Discrete Inputs)", 0x02);
-    ui->cbCode->addItem("03 (0x03) - Чтение регистров хранения (Read Holding Registers)", 0x03);
-    ui->cbCode->addItem("04 (0x04) - Чтение входных регистров (Read Input Registers)", 0x04);
-    ui->cbCode->addItem("05 (0x05) - Запись одного дискретного выхода (Write Single Coil)", 0x05);
-    ui->cbCode->addItem("06 (0x06) - Запись одного регистра (Write Single Register)", 0x06);
-    ui->cbCode->addItem("15 (0x0F) - Запись нескольких дискретных выходов (Write Multiple Coils)", 0x0F);
-    ui->cbCode->addItem("16 (0x10) - Запись нескольких регистров (Write Multiple Registers)", 0x10);
-    // Выбираем самую популярную функцию (0x03) по умолчанию
-    ui->cbCode->setCurrentIndex(2);
-
-    ui->leRegisterAddress->setText("0");
-    ui->leRegistersQty->setText("1");
-
-    auto updateDataFieldVisibility = [this]() {
-        // Получаем числовое значение выбранного кода функции (0x01, 0x05 и т.д.)
-        int funcCode = ui->cbCode->currentData().toInt();
-
-        // Проверяем, является ли команда командой записи
-        bool isWriteCommand = (funcCode == 0x05 || funcCode == 0x06 ||
-                               funcCode == 0x0F || funcCode == 0x10);
-
-        // Включаем или выключаем видимость поля
-        ui->leData->setVisible(isWriteCommand);
-    };
-
-    connect(ui->cbCode, &QComboBox::currentIndexChanged, this, updateDataFieldVisibility);
-    updateDataFieldVisibility();
-}
-
-void MainWindow::setCommandControlsStatus(bool status)
-{
-    ui->leDeviceAddress->setEnabled(status);
-    ui->cbCode->setEnabled(status);
-    ui->leRegisterAddress->setEnabled(status);
-    ui->leData->setEnabled(status);
-    ui->leRegistersQty->setEnabled(status);
-    ui->cbPolling->setEnabled(status);
-}
-
-void MainWindow::toLog(const QString& msg, bool isError ) {
-
-    QString t = QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss:zz");
-    QString logEntry = QString("%1 %2").arg(t, msg);
-
-    QStandardItem* item = new QStandardItem(logEntry);
-    if (isError) {
-        item->setForeground(Qt::darkRed);
-    }
-    m_logModel->appendRow(item);
-
-    int rowCount = m_logModel->rowCount();
-    const int MAX_LOG_ENTRIES = 1000;
-    if (rowCount > MAX_LOG_ENTRIES) {
-        int rowsToRemove = rowCount - MAX_LOG_ENTRIES / 2;
-        m_logModel->removeRows(0, rowsToRemove);
-    }
-
+void MainWindow::onLogAdded() {
     // Автоматическая прокрутка к последней записи
     ui->lvLog->scrollToBottom();
 }
+
 
 

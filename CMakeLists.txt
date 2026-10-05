@@ -24,6 +24,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         modbusmanager.h modbusmanager.cpp
+        logmanager.h logmanager.cpp
+        registerdatamodel.h registerdatamodel.cpp
+        modbusvalidator.h modbusvalidator.cpp
+        uicontroller.h uicontroller.cpp
 
     )
 # Define target properties for Android with Qt 6 as:
