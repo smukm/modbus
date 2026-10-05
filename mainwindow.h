@@ -6,6 +6,9 @@
 #include <QModbusRtuSerialClient>
 #include <QModbusDataUnit>
 #include <QModbusReply>
+#include <QStringListModel>
+#include <QStandardItemModel>
+#include <QTimer>
 
 
 QT_BEGIN_NAMESPACE
@@ -25,6 +28,9 @@ public:
 private:
     Ui::MainWindow *ui;
     ModbusManager* m_modbusManager;
+    QStandardItemModel* m_receivedDataModel;
+    QStandardItemModel *m_logModel;
+    QTimer *m_pollingTimer;
 
     void setPorts();
     void fillSettings();
@@ -33,12 +39,15 @@ private:
     void setControlsForSendData();
     void connectToDevice();
     void disconnectFromDevice();
-    void toLog(const QString& msg);
+    void toLog(const QString& msg, bool isError = false);
     void createMenu();
+    int findRowByAddressAndType(int address, const QString &regType);
 
 private slots:
     void onApplySettings();
     void onSendData();
     void onModbusDataReceived(const QModbusDataUnit &unit);
+    void onPollingToggled(bool checked);
+    void onPollingTimeout();
 };
 #endif // MAINWINDOW_H

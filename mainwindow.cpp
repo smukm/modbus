@@ -16,12 +16,31 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_modbusManager(new ModbusManager(this))
+    , m_receivedDataModel(new QStandardItemModel(this))
+    , m_logModel(new QStandardItemModel(this))
+    , m_pollingTimer(new QTimer(this))
 {
     ui->setupUi(this);
 
+    m_receivedDataModel->setColumnCount(3);
+    m_receivedDataModel->setHorizontalHeaderLabels({
+        "Адрес регистра",
+        "Значение",
+        "Тип регистра"
+    });
+    ui->tvReceivedData->setModel(m_receivedDataModel);
+    ui->lvLog->setModel(m_logModel);
+
+
+    // Настройка таймера для периодического опроса
+    m_pollingTimer->setInterval(1000); // Интервал опроса в миллисекундах (1 секунда)
+    connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
+    // Подключение чекбокса периодического опроса
+    connect(ui->cbPolling, &QCheckBox::toggled, this, &MainWindow::onPollingToggled);
+
     createMenu();
 
-    m_modbusManager = new ModbusManager(this);
     connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
         toLog("✅ Modbus: Порт успешно подключен.");
         setControlsForOpenPort();
@@ -56,6 +75,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    if (m_pollingTimer) {
+        m_pollingTimer->stop();
+    }
     if (m_modbusManager) {
         m_modbusManager->disconnectFromDevice();
     }
@@ -344,16 +366,86 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
 
     toLog(logMessage);
 
-    // Формирование детального списка полученных значений
-    QString resultStr;
+    // Добавление каждой записи в таблицу
     for (uint i = 0; i < unit.valueCount(); ++i) {
-        const QString entry = QString("Адрес %1: %2 (0x%3)")
-                                  .arg(unit.startAddress() + i)
-                                  .arg(unit.value(i))
-                                  .arg(unit.value(i), 4, 16, QChar('0')).toUpper();
-        resultStr += entry + "\n";
+
+        int regAddress = unit.startAddress() + static_cast<int>(i);
+        quint16 regValue = unit.value(i);
+        QString valueStr = QString("%1 (0x%2)")
+                               .arg(regValue)
+                               .arg(regValue, 4, 16, QChar('0')).toUpper();
+        // Ищем существующую строку с тем же адресом и типом
+        int existingRow = findRowByAddressAndType(regAddress, regType);
+
+        if (existingRow >= 0) {
+            // Строка найдена — обновляем только значение (столбец 1)
+            m_receivedDataModel->item(existingRow, 1)->setText(valueStr);
+        } else {
+            // Строка не найдена — добавляем новую
+            QList<QStandardItem*> row;
+            QString regAddressStr = QString("%1 (0x%2)")
+                                        .arg(regAddress)
+                                        .arg(regAddress, 4,16, QChar('O')).toUpper();
+            row.append(new QStandardItem(regAddressStr));
+            row.append(new QStandardItem(valueStr));
+            row.append(new QStandardItem(regType));
+            m_receivedDataModel->appendRow(row);
+        }
     }
-    ui->textEditRecievedData->append(resultStr);
+    // Автоматическая прокрутка к последнему элементу
+    ui->tvReceivedData->scrollToBottom();
+}
+
+/**
+ * @brief Ищет в модели строку с указанным адресом регистра и типом.
+ * @param address Адрес регистра для поиска.
+ * @param regType Тип регистра для поиска.
+ * @return Индекс строки, если найдена; -1 в противном случае.
+ */
+int MainWindow::findRowByAddressAndType(int address, const QString &regType) {
+    for (int row = 0; row < m_receivedDataModel->rowCount(); ++row) {
+        QStandardItem* addrItem = m_receivedDataModel->item(row, 0);  // Столбец 0: адрес
+        QStandardItem* typeItem = m_receivedDataModel->item(row, 2);  // Столбец 2: тип
+
+        if (addrItem && typeItem) {
+            if (addrItem->text().toInt() == address && typeItem->text() == regType) {
+                return row;
+            }
+        }
+    }
+    return -1; // Не найдено
+}
+
+/**
+ * @brief Обработчик изменения состояния чекбокса периодического опроса.
+ */
+void MainWindow::onPollingToggled(bool checked) {
+    if (checked) {
+        if (m_modbusManager && m_modbusManager->isConnected()) {
+            m_pollingTimer->start();
+            toLog("Периодический опрос запущен");
+        } else {
+            ui->cbPolling->setChecked(false);
+            QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
+        }
+    } else {
+        m_pollingTimer->stop();
+        toLog("Периодический опрос остановлен");
+    }
+}
+
+/**
+ * @brief Слот, вызываемый таймером периодического опроса.
+ * Автоматически отправляет Modbus-запрос с текущими параметрами.
+ */
+void MainWindow::onPollingTimeout() {
+    if (m_modbusManager && m_modbusManager->isConnected()) {
+        onSendData();
+    } else {
+        m_pollingTimer->stop();
+        ui->cbPolling->setChecked(false);
+        toLog("Опрос остановлен: порт отключен");
+    }
 }
 
 /**
@@ -373,6 +465,7 @@ void MainWindow::setControlsForOpenPort() {
     ui->cbCode->setEnabled(true);
     ui->leRegisterAddress->setEnabled(true);
     ui->leRegistersQty->setEnabled(true);
+    ui->cbPolling->setEnabled(true);
 }
 
 /**
@@ -393,6 +486,10 @@ void MainWindow::setControlsForClosedPort() {
     ui->cbCode->setEnabled(false);
     ui->leRegisterAddress->setEnabled(false);
     ui->leRegistersQty->setEnabled(false);
+
+    ui->cbPolling->setEnabled(false);
+    ui->cbPolling->setChecked(false);
+    m_pollingTimer->stop();
 }
 
 /**
@@ -432,10 +529,24 @@ void MainWindow::setControlsForSendData() {
     updateDataFieldVisibility();
 }
 
-void MainWindow::toLog(const QString& msg) {
+void MainWindow::toLog(const QString& msg, bool isError ) {
 
-    QString t = QDateTime::currentDateTime().toString("dd-mm-yyyy hh:mm:ss:zz");
-    ui->textEditLog->append(QString("%1 %2").arg(t, msg));
+    QString t = QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss:zz");
+    QString logEntry = QString("%1 %2").arg(t, msg);
+
+    QStandardItem* item = new QStandardItem(logEntry);
+    if (isError) {
+        item->setForeground(Qt::darkRed);
+    }
+    m_logModel->appendRow(item);
+
+    const int MAX_LOG_ENTRIES = 1000;
+    while (m_logModel->rowCount() > MAX_LOG_ENTRIES) {
+         m_logModel->removeRows(0, MAX_LOG_ENTRIES / 2);
+     }
+
+    // Автоматическая прокрутка к последней записи
+    ui->lvLog->scrollToBottom();
 }
 
 
