@@ -24,6 +24,12 @@
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="spacing">
+      <number>15</number>
+     </property>
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -184,7 +190,7 @@
            <item>
             <widget class="QPushButton" name="btnSendData">
              <property name="text">
-              <string>Выполнить разово</string>
+              <string>Выполнить</string>
              </property>
             </widget>
            </item>

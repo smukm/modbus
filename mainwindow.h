@@ -37,7 +37,10 @@ private:
     void setControlsForOpenPort();
     void setControlsForClosedPort();
     void setControlsForSendData();
+    void setCommandControlsStatus(bool status);
     void connectToDevice();
+    void sendData();
+    void stopPolling();
     void disconnectFromDevice();
     void toLog(const QString& msg, bool isError = false);
     void createMenu();
@@ -45,9 +48,8 @@ private:
 
 private slots:
     void onApplySettings();
-    void onSendData();
+    void onExecuteCommand();
     void onModbusDataReceived(const QModbusDataUnit &unit);
-    void onPollingToggled(bool checked);
     void onPollingTimeout();
 };
 #endif // MAINWINDOW_H

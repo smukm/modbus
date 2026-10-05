@@ -36,8 +36,6 @@ MainWindow::MainWindow(QWidget *parent)
     // Настройка таймера для периодического опроса
     m_pollingTimer->setInterval(1000); // Интервал опроса в миллисекундах (1 секунда)
     connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
-    // Подключение чекбокса периодического опроса
-    connect(ui->cbPolling, &QCheckBox::toggled, this, &MainWindow::onPollingToggled);
 
     createMenu();
 
@@ -52,10 +50,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
+        stopPolling();
         QMessageBox::warning(this, "Ошибка", error);
     });
 
     connect(m_modbusManager, &ModbusManager::errorCriticalOccured, this, [this](const QString &error) {
+        stopPolling();
         QMessageBox::critical(this, "Ошибка", error);
     });
 
@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Подключение кнопок интерфейса к слотам
     connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
-    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onSendData);
+    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onExecuteCommand);
 }
 
 MainWindow::~MainWindow()
@@ -190,10 +190,50 @@ void MainWindow::onApplySettings() {
     }
 }
 
+
+void MainWindow::onExecuteCommand() {
+
+    if (!m_modbusManager || !m_modbusManager->isConnected()) {
+        QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
+        return;
+    }
+
+    //m_receivedDataModel->clear();
+
+    // Если таймер уже запущен, кнопка работает как "Стоп"
+    if (m_pollingTimer->isActive()) {
+        stopPolling();
+        return; // Прерываем, НЕ отправляя запрос
+    }
+
+    // Если таймер не запущен
+    if (ui->cbPolling->isChecked()) {
+        // Запускаем периодический опрос
+        m_pollingTimer->start();
+        ui->btnSendData->setText("Стоп"); // Меняем текст кнопки
+        toLog("Периодический опрос запущен");
+        setCommandControlsStatus(false);
+    }
+
+    // Отправляем запрос (сразу для периодического или одиночный)
+    sendData();
+}
+
+void MainWindow::stopPolling() {
+    if (m_pollingTimer->isActive()) {
+        m_pollingTimer->stop();
+        ui->cbPolling->setChecked(false); // Снимаем галочку
+        ui->btnSendData->setText("Отправить"); // Возвращаем исходный текст
+        toLog("Периодический опрос остановлен");
+        setCommandControlsStatus(true);
+
+    }
+}
+
 /**
  * @brief Формирует и отправляет Modbus-запрос на основе данных из полей ввода.
  */
-void MainWindow::onSendData() {
+void MainWindow::sendData() {
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
         QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
         return;
@@ -225,6 +265,7 @@ void MainWindow::onSendData() {
     quint8 deviceAddr = parseByte(ui->leDeviceAddress->text(), ok);
     if (!ok) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (ожидается 0-255 или 0x00-0xFF)!");
+        stopPolling();
         return;
     }
 
@@ -236,10 +277,12 @@ void MainWindow::onSendData() {
 
     if (!okAddr) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра (0-65535)!");
+        stopPolling();
         return;
     }
     if (!okQty) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректное количество регистров (1-65535)!");
+        stopPolling();
         return;
     }
 
@@ -261,6 +304,7 @@ void MainWindow::onSendData() {
         break;
     default:
         QMessageBox::warning(this, "Ошибка", "Данный код функции не поддерживается в этом примере");
+        stopPolling();
         return;
     }
 
@@ -269,6 +313,7 @@ void MainWindow::onSendData() {
         QString dataText = ui->leData->text().trimmed();
         if (dataText.isEmpty()) {
             QMessageBox::warning(this, "Ошибка ввода", "Введите значение для записи!");
+            stopPolling();
             return;
         }
         // парсим строку с данными
@@ -281,6 +326,7 @@ void MainWindow::onSendData() {
             if (!valOk || val < 0 || val > 0xFFFF) { // Проверка на диапазон 16-битного значения
                 QMessageBox::warning(this, "Ошибка ввода",
                                      QString("Некорректное значение для записи: '%1'\nОжидается число от 0 до 65535 (или 0x0000-0xFFFF)").arg(part));
+                stopPolling();
                 return;
             }
 
@@ -294,6 +340,7 @@ void MainWindow::onSendData() {
                                                  "0 (или 0x00) — для выключения (OFF)\n"
                                                  "65280 (или 0xFF00) — для включения (ON)\n"
                                                  "Вы ввели: %1").arg(val));
+                    stopPolling();
                     return;
                 }
                 // Приводим 1 к стандартному 0xFF00
@@ -307,14 +354,16 @@ void MainWindow::onSendData() {
         // Проверка соответствия количества
         if (funcCode == 0x0F || funcCode == 0x10) {
             if (writeValues.size() != count) {
-                QMessageBox::warning(this, "Предупреждение",
-                                     QString("Количество введенных значений (%1) не совпадает с указанным количеством (%2).\nБудет записано %3 значений.")
-                                         .arg(writeValues.size()).arg(count).arg(writeValues.size()));
+                toLog(
+                    QString("Количество введенных значений (%1) не совпадает с указанным количеством (%2).\nБудет записано %3 значений.")
+                                         .arg(writeValues.size()).arg(count).arg(writeValues.size())
+                    ,true);
                 count = static_cast<quint16>(writeValues.size());
             }
         } else {
             if (writeValues.size() > 1) {
                 QMessageBox::warning(this, "Ошибка ввода", "Для функций 0x05 и 0x06 можно указать только одно значение!");
+                stopPolling();
                 return;
             }
         }
@@ -368,12 +417,12 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
 
     // Добавление каждой записи в таблицу
     for (uint i = 0; i < unit.valueCount(); ++i) {
-
         int regAddress = unit.startAddress() + static_cast<int>(i);
         quint16 regValue = unit.value(i);
         QString valueStr = QString("%1 (0x%2)")
                                .arg(regValue)
                                .arg(regValue, 4, 16, QChar('0')).toUpper();
+
         // Ищем существующую строку с тем же адресом и типом
         int existingRow = findRowByAddressAndType(regAddress, regType);
 
@@ -381,19 +430,22 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
             // Строка найдена — обновляем только значение (столбец 1)
             m_receivedDataModel->item(existingRow, 1)->setText(valueStr);
         } else {
-            // Строка не найдена — добавляем новую
-            QList<QStandardItem*> row;
+            // Добавляем новую строку
             QString regAddressStr = QString("%1 (0x%2)")
                                         .arg(regAddress)
-                                        .arg(regAddress, 4,16, QChar('O')).toUpper();
-            row.append(new QStandardItem(regAddressStr));
-            row.append(new QStandardItem(valueStr));
-            row.append(new QStandardItem(regType));
-            m_receivedDataModel->appendRow(row);
+                                        .arg(regAddress, 4, 16, QChar('0')).toUpper(); // ИСПРАВЛЕНО: '0' вместо 'O'
+
+            QStandardItem* addrItem = new QStandardItem(regAddressStr);
+            addrItem->setData(regAddress, Qt::UserRole); // Сохраняем адрес как данные
+
+            QStandardItem* valueItem = new QStandardItem(valueStr);
+            QStandardItem* typeItem = new QStandardItem(regType);
+
+            m_receivedDataModel->appendRow({addrItem, valueItem, typeItem});
         }
     }
     // Автоматическая прокрутка к последнему элементу
-    ui->tvReceivedData->scrollToBottom();
+    //ui->tvReceivedData->scrollToBottom();
 }
 
 /**
@@ -404,34 +456,17 @@ void MainWindow::onModbusDataReceived(const QModbusDataUnit &unit) {
  */
 int MainWindow::findRowByAddressAndType(int address, const QString &regType) {
     for (int row = 0; row < m_receivedDataModel->rowCount(); ++row) {
-        QStandardItem* addrItem = m_receivedDataModel->item(row, 0);  // Столбец 0: адрес
-        QStandardItem* typeItem = m_receivedDataModel->item(row, 2);  // Столбец 2: тип
+        QStandardItem* addrItem = m_receivedDataModel->item(row, 0);
+        QStandardItem* typeItem = m_receivedDataModel->item(row, 2);
 
         if (addrItem && typeItem) {
-            if (addrItem->text().toInt() == address && typeItem->text() == regType) {
+            int storedAddress = addrItem->data(Qt::UserRole).toInt();
+            if (storedAddress == address && typeItem->text() == regType) {
                 return row;
             }
         }
     }
-    return -1; // Не найдено
-}
-
-/**
- * @brief Обработчик изменения состояния чекбокса периодического опроса.
- */
-void MainWindow::onPollingToggled(bool checked) {
-    if (checked) {
-        if (m_modbusManager && m_modbusManager->isConnected()) {
-            m_pollingTimer->start();
-            toLog("Периодический опрос запущен");
-        } else {
-            ui->cbPolling->setChecked(false);
-            QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
-        }
-    } else {
-        m_pollingTimer->stop();
-        toLog("Периодический опрос остановлен");
-    }
+    return -1;
 }
 
 /**
@@ -440,11 +475,12 @@ void MainWindow::onPollingToggled(bool checked) {
  */
 void MainWindow::onPollingTimeout() {
     if (m_modbusManager && m_modbusManager->isConnected()) {
-        onSendData();
+        sendData();
     } else {
         m_pollingTimer->stop();
         ui->cbPolling->setChecked(false);
         toLog("Опрос остановлен: порт отключен");
+        stopPolling();
     }
 }
 
@@ -527,6 +563,16 @@ void MainWindow::setControlsForSendData() {
 
     connect(ui->cbCode, &QComboBox::currentIndexChanged, this, updateDataFieldVisibility);
     updateDataFieldVisibility();
+}
+
+void MainWindow::setCommandControlsStatus(bool status)
+{
+    ui->leDeviceAddress->setEnabled(status);
+    ui->cbCode->setEnabled(status);
+    ui->leRegisterAddress->setEnabled(status);
+    ui->leData->setEnabled(status);
+    ui->leRegistersQty->setEnabled(status);
+    ui->cbPolling->setEnabled(status);
 }
 
 void MainWindow::toLog(const QString& msg, bool isError ) {
