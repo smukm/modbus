@@ -45,8 +45,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
-        stopPolling();
-        QMessageBox::warning(this, "Ошибка", error);
+        //stopPolling();
+        //QMessageBox::warning(this, "Ошибка", error);
+        m_logManager->addLog(error, true);
     });
 
     connect(m_modbusManager, &ModbusManager::errorCriticalOccured, this, [this](const QString &error) {
