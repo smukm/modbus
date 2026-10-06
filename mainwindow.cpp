@@ -58,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
         m_registerModel->updateData(unit);
         m_logManager->addLog("Данные успешно получены и обновлены в таблице.");
     });
+    // Новое подключение для отслеживания успешного завершения записи
+    connect(m_modbusManager, &ModbusManager::writeCompleted, this, [this]() {
+        m_logManager->addLog("✅ Запись данных успешно завершена.");
+    });
 
     // Первичная инициализация элементов интерфейса
     createMenu();
@@ -70,6 +74,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
     connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onStartReading);
     connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
+    connect(ui->btnClearLogs, &QPushButton::clicked, this, [this]() {
+        m_logManager->clear();
+    });
 }
 
 MainWindow::~MainWindow()

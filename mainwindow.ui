@@ -307,6 +307,13 @@
         <item>
          <widget class="QListView" name="lvLog"/>
         </item>
+        <item>
+         <widget class="QPushButton" name="btnClearLogs">
+          <property name="text">
+           <string>Очистить логи</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

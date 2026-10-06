@@ -9,10 +9,13 @@
  */
 ModbusManager::ModbusManager(QObject *parent)
     : QObject{parent}
+    , m_modbusDevice(new QModbusRtuSerialClient(this))
+    , m_currentReply(nullptr)
+    , m_isProcessing(false)
 {
     // Создаем экземпляр RTU-клиента. Родителем является сам ModbusManager,
     // что гарантирует автоматическое удаление при уничтожении менеджера.
-    m_modbusDevice = new QModbusRtuSerialClient(this);
+    //m_modbusDevice = new QModbusRtuSerialClient(this);
 
     // Подключаем сигналы для отслеживания состояния соединения и системных ошибок
     connect(m_modbusDevice, &QModbusClient::stateChanged, this, &ModbusManager::onStateChanged);
@@ -50,7 +53,16 @@ void ModbusManager::connectToDevice(const ModbusConnectionSettings &settings) {
  * @brief Разрывает текущее соединение с устройством.
  */
 void ModbusManager::disconnectFromDevice() {
-    if (m_modbusDevice) m_modbusDevice->disconnectDevice();
+    if (m_modbusDevice) {
+        m_modbusDevice->disconnectDevice();
+    }
+    // Очищаем очередь и сбрасываем флаги при разрыве соединения
+    m_requestQueue.clear();
+    m_isProcessing = false;
+    if (m_currentReply) {
+        m_currentReply->deleteLater();
+        m_currentReply = nullptr;
+    }
 }
 
 /**
@@ -79,37 +91,16 @@ void ModbusManager::sendReadRequest(
         return;
     };
 
-    if (m_currentReply) {
-        m_currentReply->deleteLater();
-        m_currentReply = nullptr;
-    }
+    ModbusRequest req;
+    req.type = ModbusRequest::Type::Read;
+    req.serverAddress = serverAddress;
+    req.funcCode = funcCode;
+    req.startAddress = startAddress;
+    req.count = count;
 
-    QModbusDataUnit::RegisterType type;
-    switch (funcCode) {
-    case 0x01: type = QModbusDataUnit::Coils; break;
-    case 0x02: type = QModbusDataUnit::DiscreteInputs; break;
-    case 0x03: type = QModbusDataUnit::HoldingRegisters; break;
-    case 0x04: type = QModbusDataUnit::InputRegisters; break;
-    default: emit errorOccurred("Неподдерживаемый код функции для чтения"); return;
-    }
-
-    // Формируем единицу данных (Data Unit) для запроса
-    QModbusDataUnit request(type, startAddress, count);
-    // Асинхронная отправка запроса. Возвращает объект QModbusReply для отслеживания результата.
-    m_currentReply = m_modbusDevice->sendReadRequest(request, serverAddress);
-
-    if (m_currentReply) {
-        // Если ответ еще не получен (стандартное асинхронное поведение), ждем сигнал finished
-        if (!m_currentReply->isFinished()) {
-            connect(m_currentReply, &QModbusReply::finished, this, &ModbusManager::onReplyFinished);
-        } else {
-            // Редкий случай: ответ пришел синхронно (мгновенно), обрабатываем сразу
-            onReplyFinished();
-        }
-    } else {
-        // Ошибка на этапе формирования или постановки запроса в очередь
-        emit errorCriticalOccured(m_modbusDevice->errorString());
-    }
+    // Добавляем запрос на чтение в конец очереди (низкий приоритет)
+    m_requestQueue.enqueue(req);
+    processNextRequest();
 }
 
 /**
@@ -134,29 +125,70 @@ void ModbusManager::sendWriteRequest(
         return;
     }
 
+    ModbusRequest req;
+    req.type = ModbusRequest::Type::Write;
+    req.serverAddress = serverAddress;
+    req.funcCode = funcCode;
+    req.startAddress = startAddress;
+    req.count = static_cast<quint16>(values.size());
+    req.values = values;
+
+    // Добавляем запрос на запись в начало очереди (высокий приоритет)
+    m_requestQueue.prepend(req);
+    processNextRequest();
+}
+
+void ModbusManager::processNextRequest() {
+    // Если уже идет обработка, очередь пуста или порт закрыт — выходим
+    if (m_isProcessing || m_requestQueue.isEmpty() || !isConnected()) {
+        return;
+    }
+
+    m_isProcessing = true;
+    m_currentRequest = m_requestQueue.dequeue();
+
     if (m_currentReply) {
         m_currentReply->deleteLater();
         m_currentReply = nullptr;
     }
 
-    QModbusDataUnit::RegisterType type;
-    quint16 count = static_cast<quint16>(values.size());
-    if (funcCode == 0x05 || funcCode == 0x0F) {
-        type = QModbusDataUnit::Coils;
-    } else if (funcCode == 0x06 || funcCode == 0x10) {
-        type = QModbusDataUnit::HoldingRegisters;
-    } else {
-        emit errorOccurred("Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)");
-        return;
-    }
+    if (m_currentRequest.type == ModbusRequest::Type::Read) {
+        QModbusDataUnit::RegisterType type;
+        switch (m_currentRequest.funcCode) {
+        case 0x01: type = QModbusDataUnit::Coils; break;
+        case 0x02: type = QModbusDataUnit::DiscreteInputs; break;
+        case 0x03: type = QModbusDataUnit::HoldingRegisters; break;
+        case 0x04: type = QModbusDataUnit::InputRegisters; break;
+        default:
+            emit errorOccurred("Неподдерживаемый код функции для чтения");
+            m_isProcessing = false;
+            processNextRequest(); // Пробуем следующий запрос, если этот невалиден
+            return;
+        }
 
-    // Формируем запрос. count берется из размера переданного вектора
-    QModbusDataUnit request(type, startAddress, count);
-    for (int i = 0; i < count; ++i) {
-        request.setValue(i, values[i]);
-    }
+        QModbusDataUnit request(type, m_currentRequest.startAddress, m_currentRequest.count);
+        m_currentReply = m_modbusDevice->sendReadRequest(request, m_currentRequest.serverAddress);
 
-    m_currentReply = m_modbusDevice->sendWriteRequest(request, serverAddress);
+    } else if (m_currentRequest.type == ModbusRequest::Type::Write) {
+        QModbusDataUnit::RegisterType type;
+        if (m_currentRequest.funcCode == 0x05 || m_currentRequest.funcCode == 0x0F) {
+            type = QModbusDataUnit::Coils;
+        } else if (m_currentRequest.funcCode == 0x06 || m_currentRequest.funcCode == 0x10) {
+            type = QModbusDataUnit::HoldingRegisters;
+        } else {
+            emit errorOccurred("Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)");
+            m_isProcessing = false;
+            processNextRequest();
+            return;
+        }
+
+        QModbusDataUnit request(type, m_currentRequest.startAddress, m_currentRequest.count);
+        for (int i = 0; i < m_currentRequest.count; ++i) {
+            request.setValue(i, m_currentRequest.values[i]);
+        }
+
+        m_currentReply = m_modbusDevice->sendWriteRequest(request, m_currentRequest.serverAddress);
+    }
 
     if (m_currentReply) {
         if (!m_currentReply->isFinished()) {
@@ -166,8 +198,9 @@ void ModbusManager::sendWriteRequest(
         }
     } else {
         emit errorCriticalOccured(m_modbusDevice->errorString());
+        m_isProcessing = false;
+        processNextRequest(); // Продолжаем обработку очереди даже при ошибке отправки
     }
-
 }
 
 /**
@@ -220,9 +253,12 @@ void ModbusManager::onReplyFinished() {
 
     if (m_currentReply->error() == QModbusDevice::NoError) {
         // Запрос выполнен успешно, извлекаем блок данных и отправляем его в UI
-        const QModbusDataUnit unit = m_currentReply->result();
-
-        emit dataReceived(unit);
+        if (m_currentRequest.type == ModbusRequest::Type::Read) {
+            const QModbusDataUnit unit = m_currentReply->result();
+            emit dataReceived(unit);
+        } else {
+            emit writeCompleted();
+        }
     } else if (m_currentReply->error() == QModbusDevice::ProtocolError) {
         // Специфическая ошибка: устройство ответило, но вернуло Modbus Exception (исключение).
         // Это означает, что запрос был получен, но отвергнут устройством (неверный адрес, функция и т.д.).
@@ -257,4 +293,8 @@ void ModbusManager::onReplyFinished() {
     // Обязательно удаляем объект ответа, чтобы избежать утечки памяти
     m_currentReply->deleteLater();
     m_currentReply = nullptr;
+    m_isProcessing = false;
+
+    // Запускаем обработку следующего запроса из очереди
+    processNextRequest();
 }

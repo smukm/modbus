@@ -81,6 +81,7 @@ public:
     QTableView *tvReceivedData;
     QLabel *label_12;
     QListView *lvLog;
+    QPushButton *btnClearLogs;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -307,6 +308,11 @@ public:
 
         verticalLayout_3->addWidget(lvLog);
 
+        btnClearLogs = new QPushButton(centralwidget);
+        btnClearLogs->setObjectName("btnClearLogs");
+
+        verticalLayout_3->addWidget(btnClearLogs);
+
 
         horizontalLayout_3->addLayout(verticalLayout_3);
 
@@ -365,6 +371,7 @@ public:
         leData->setPlaceholderText(QCoreApplication::translate("MainWindow", "\320\267\320\275\320\260\321\207\320\265\320\275\320\270\321\217 \321\207\320\265\321\200\320\265\320\267 \320\267\320\260\320\277\321\217\321\202\321\203\321\216 (\320\275\320\260\320\277\321\200\320\270\320\274\320\265\321\200:  10, 20, 30)", nullptr));
         label_2->setText(QCoreApplication::translate("MainWindow", "\320\236\321\202\320\262\320\265\321\202 \320\276\321\202 \321\203\321\201\321\202\321\200\320\276\320\271\321\201\321\202\320\262\320\260", nullptr));
         label_12->setText(QCoreApplication::translate("MainWindow", "\320\233\320\276\320\263\320\270", nullptr));
+        btnClearLogs->setText(QCoreApplication::translate("MainWindow", "\320\236\321\207\320\270\321\201\321\202\320\270\321\202\321\214 \320\273\320\276\320\263\320\270", nullptr));
     } // retranslateUi
 
 };

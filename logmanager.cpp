@@ -22,5 +22,5 @@ void LogManager::addLog(const QString &message, bool isError) {
 }
 
 void LogManager::clear() {
-    clear();
+    QStandardItemModel::clear();
 }
