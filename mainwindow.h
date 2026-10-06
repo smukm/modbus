@@ -33,13 +33,15 @@ private:
 
     void setPorts();
     void fillSettings();
-    void sendData();
+    void sendReadData();
+    void sendWriteData();
     void stopPolling();
     void createMenu();
 
 private slots:
     void onApplySettings();
-    void onExecuteCommand();
+    void onStartReading();
+    void onStartWriting();
     void onPollingTimeout();
     void onLogAdded();
 };

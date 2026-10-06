@@ -45,8 +45,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
-        //stopPolling();
-        //QMessageBox::warning(this, "Ошибка", error);
         m_logManager->addLog(error, true);
     });
 
@@ -70,7 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Подключение кнопок интерфейса к слотам
     connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
-    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onExecuteCommand);
+    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onStartReading);
+    connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
 }
 
 MainWindow::~MainWindow()
@@ -190,7 +189,7 @@ void MainWindow::onApplySettings() {
 }
 
 
-void MainWindow::onExecuteCommand() {
+void MainWindow::onStartReading() {
 
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
         QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
@@ -203,22 +202,29 @@ void MainWindow::onExecuteCommand() {
         return;
     }
 
-    // Если таймер не запущен
-    if (ui->cbPolling->isChecked()) {
-        // Запускаем периодический опрос
-        m_pollingTimer->start();
-        m_uiController->setPollingActiveState(true);
-        m_logManager->addLog("Периодический опрос запущен");
+    // Запускаем периодический опрос
+    m_pollingTimer->start();
+    m_uiController->setPollingActiveState(true);
+    m_logManager->addLog("Периодический опрос запущен");
+
+    // Сразу отправляем первый запрос
+    sendReadData();
+}
+
+void MainWindow::onStartWriting() {
+    if (!m_modbusManager || !m_modbusManager->isConnected()) {
+        QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
+        return;
     }
 
-    // Отправляем запрос (сразу для периодического или одиночный)
-    sendData();
+    m_logManager->addLog("▶ Выполнение одиночной команды записи...");
+    sendWriteData();
 }
 
 void MainWindow::stopPolling() {
     if (m_pollingTimer->isActive()) {
         m_pollingTimer->stop();
-        ui->cbPolling->setChecked(false);
+        //ui->cbPolling->setChecked(false);
         ui->btnSendData->setText("Выполнить");
         m_uiController->setPollingActiveState(false); // Делегируем изменение UI
         m_logManager->addLog("Периодический опрос остановлен");
@@ -228,7 +234,7 @@ void MainWindow::stopPolling() {
 /**
  * @brief Формирует и отправляет Modbus-запрос на основе данных из полей ввода.
  */
-void MainWindow::sendData() {
+void MainWindow::sendReadData() {
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
         QMessageBox::warning(this, "Ошибка", "Сначала откройте порт!");
         return;
@@ -236,10 +242,10 @@ void MainWindow::sendData() {
 
     // Парсинг базовых значений из UI (с минимальной проверкой на пустоту)
     bool okAddr, okQty, okDev;
-    quint8 deviceAddr = ui->leDeviceAddress->text().trimmed().toInt(&okDev, 0);
-    quint8 funcCode = static_cast<quint8>(ui->cbCode->currentData().toInt());
-    quint16 startAddress = ui->leRegisterAddress->text().trimmed().toInt(&okAddr, 0);
-    quint16 count = ui->leRegistersQty->text().trimmed().toInt(&okQty, 0);
+    quint8 deviceAddr = ui->leReadDeviceAddress->text().trimmed().toInt(&okDev, 0);
+    quint8 funcCode = static_cast<quint8>(ui->cbReadCode->currentData().toInt());
+    quint16 startAddress = ui->leReadRegisterAddress->text().trimmed().toInt(&okAddr, 0);
+    quint16 count = ui->leReadRegistersQty->text().trimmed().toInt(&okQty, 0);
 
     if (!okDev || deviceAddr > 255) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (0-255)!");
@@ -256,8 +262,11 @@ void MainWindow::sendData() {
         stopPolling();
         return;
     }
-    m_logManager->addLog(QString("%1:\n Адрес устройства: %2, адрес регистра: %3, кол-во: %4")
-                             .arg(ui->cbCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
+    // Логируем параметры только при старте опроса, чтобы не спамить
+     if (!m_pollingTimer->isActive() || m_registerModel->rowCount() == 0) {
+         m_logManager->addLog(QString("Чтение: %1 | Addr: %2, Reg: %3, Qty: %4")
+                                  .arg(ui->cbReadCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
+     }
 
     // Делегируем сложную валидацию специализированному классу
     ValidationResult basicCheck = ModbusValidator::validateBasicParams(deviceAddr, funcCode, startAddress, count);
@@ -267,36 +276,56 @@ void MainWindow::sendData() {
         return;
     }
 
-    bool isReadRequest = (funcCode == 0x01 || funcCode == 0x02 || funcCode == 0x03 || funcCode == 0x04);
-    QVector<quint16> writeValues;
-
-    // Валидация данных для записи
-    if (!isReadRequest) {
-        ValidationResult writeCheck = ModbusValidator::validateWriteData(funcCode, ui->leData->text(), writeValues);
-        if (!writeCheck.isValid) {
-            QMessageBox::warning(this, "Ошибка ввода", writeCheck.errorMessage);
-            stopPolling();
-            return;
-        }
-
-        // Логика корректировки count при несовпадении количества введенных значений
-        if ((funcCode == 0x0F || funcCode == 0x10) && writeValues.size() != count) {
-            m_logManager->addLog(QString("Количество введенных значений (%1) не совпадает с указанным (%2).\nБудет записано %1 значений.")
-                                     .arg(writeValues.size()).arg(count), true);
-            count = static_cast<quint16>(writeValues.size());
-        }
-
-        m_logManager->addLog(" Данные для записи: " + ui->leData->text().trimmed());
-    }
-
-    // Отправка запроса
-    if (isReadRequest) {
-        m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
-    } else {
-        m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, writeValues);
-    }
+    m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
 
     m_logManager->addLog("Запрос отправлен. Ожидание ответа...");
+}
+
+void MainWindow::sendWriteData() {
+    if (!m_modbusManager || !m_modbusManager->isConnected()) return;
+
+    bool okAddr, okQty, okDev;
+    quint8 deviceAddr = ui->leWriteDeviceAddress->text().trimmed().toInt(&okDev, 0);
+    quint8 funcCode = static_cast<quint8>(ui->cbWriteCode->currentData().toInt());
+    quint16 startAddress = ui->leWriteRegisterAddress->text().trimmed().toInt(&okAddr, 0);
+    quint16 count = ui->leWriteRegistersQty->text().trimmed().toInt(&okQty, 0);
+
+    if (!okDev || deviceAddr > 255) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (0-255)!");
+        return;
+    }
+    if (!okAddr || startAddress > 65535) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра (0-65535)!");
+        return;
+    }
+    if (!okQty || count < 1 || count > 65535) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректное количество регистров (1-65535)!");
+        return;
+    }
+    m_logManager->addLog(QString("Запись: %1 | Addr: %2, Reg: %3, Qty: %4")
+                             .arg(ui->cbWriteCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
+
+    ValidationResult basicCheck = ModbusValidator::validateBasicParams(deviceAddr, funcCode, startAddress, count);
+    if (!basicCheck.isValid) {
+        QMessageBox::warning(this, "Ошибка валидации", basicCheck.errorMessage);
+        return;
+    }
+
+    QVector<quint16> writeValues;
+    ValidationResult writeCheck = ModbusValidator::validateWriteData(funcCode, ui->leData->text(), writeValues);
+    if (!writeCheck.isValid) {
+        QMessageBox::warning(this, "Ошибка ввода", writeCheck.errorMessage);
+        return;
+    }
+
+    if ((funcCode == 0x0F || funcCode == 0x10) && writeValues.size() != count) {
+        m_logManager->addLog(QString("Кол-во значений (%1) не совпадает с указанным (%2). Бу9дет записано %1.")
+                                 .arg(writeValues.size()).arg(count), true);
+    }
+
+    m_logManager->addLog(" Данные для записи: " + ui->leData->text().trimmed());
+
+    m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, writeValues);
 }
 
 /**
@@ -305,12 +334,12 @@ void MainWindow::sendData() {
  */
 void MainWindow::onPollingTimeout() {
     if (m_modbusManager && m_modbusManager->isConnected()) {
-        sendData();
+        sendReadData();
     } else {
-        m_pollingTimer->stop();
-        ui->cbPolling->setChecked(false);
-        m_logManager->addLog("Опрос остановлен: порт отключен");
+        //m_pollingTimer->stop();
+        //ui->cbPolling->setChecked(false);
         stopPolling();
+        m_logManager->addLog("Опрос остановлен: порт отключен");
     }
 }
 

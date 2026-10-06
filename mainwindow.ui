@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1231</width>
+    <height>807</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -101,20 +101,20 @@
         <item>
          <widget class="QGroupBox" name="gbCommand">
           <property name="title">
-           <string>Команда</string>
+           <string>Чтение регистров</string>
           </property>
           <widget class="QWidget" name="gridLayoutWidget_2">
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>20</y>
+             <y>30</y>
              <width>371</width>
              <height>160</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="2" column="1">
-             <widget class="QComboBox" name="cbCode"/>
+             <widget class="QComboBox" name="cbReadCode"/>
             </item>
             <item row="7" column="0">
              <widget class="QLabel" name="label_11">
@@ -123,8 +123,8 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="leRegistersQty">
+            <item row="6" column="1">
+             <widget class="QLineEdit" name="leReadRegisterAddress">
               <property name="placeholderText">
                <string>0x00</string>
               </property>
@@ -134,6 +134,20 @@
              <widget class="QLabel" name="label_9">
               <property name="text">
                <string>Код функции</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="leReadDeviceAddress">
+              <property name="placeholderText">
+               <string>0x01</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QLineEdit" name="leReadRegistersQty">
+              <property name="placeholderText">
+               <string>0x00</string>
               </property>
              </widget>
             </item>
@@ -151,49 +165,120 @@
               </property>
              </widget>
             </item>
-            <item row="6" column="1">
-             <widget class="QLineEdit" name="leRegisterAddress">
-              <property name="placeholderText">
-               <string>0x00</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="leDeviceAddress">
-              <property name="placeholderText">
-               <string>0x01</string>
-              </property>
-             </widget>
-            </item>
            </layout>
+          </widget>
+          <widget class="QPushButton" name="btnSendData">
+           <property name="geometry">
+            <rect>
+             <x>500</x>
+             <y>30</y>
+             <width>85</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Выполнить</string>
+           </property>
           </widget>
          </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
-            <item>
-             <widget class="QLineEdit" name="leData">
-              <property name="placeholderText">
-               <string>значения через запятую (например:  10, 20, 30)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnSendData">
-              <property name="text">
-               <string>Выполнить</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cbPolling">
-            <property name="text">
-             <string>Периодический повтор</string>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Запись в регистры</string>
             </property>
+            <widget class="QWidget" name="gridLayoutWidget_3">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>361</width>
+               <height>141</height>
+              </rect>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="leWriteDeviceAddress">
+                <property name="placeholderText">
+                 <string>0x01</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_14">
+                <property name="text">
+                 <string>Код функции</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="cbWriteCode"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_13">
+                <property name="text">
+                 <string>Адрес устройства SlaveID</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Адрес регистра</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="leWriteRegisterAddress">
+                <property name="placeholderText">
+                 <string>0x00</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>Количество регистров</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="leWriteRegistersQty">
+                <property name="placeholderText">
+                 <string>0x00</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QPushButton" name="btnExecuteOnce">
+             <property name="geometry">
+              <rect>
+               <x>500</x>
+               <y>80</y>
+               <width>80</width>
+               <height>27</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Выполнить</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="leData">
+             <property name="geometry">
+              <rect>
+               <x>380</x>
+               <y>30</y>
+               <width>201</width>
+               <height>27</height>
+              </rect>
+             </property>
+             <property name="placeholderText">
+              <string>значения через запятую (например:  10, 20, 30)</string>
+             </property>
+            </widget>
            </widget>
           </item>
          </layout>
@@ -233,8 +318,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>19</height>
+     <width>1231</width>
+     <height>24</height>
     </rect>
    </property>
   </widget>
@@ -246,11 +331,10 @@
   <tabstop>cbDataBits</tabstop>
   <tabstop>cbParity</tabstop>
   <tabstop>cbStopBits</tabstop>
-  <tabstop>leDeviceAddress</tabstop>
-  <tabstop>cbCode</tabstop>
-  <tabstop>leRegisterAddress</tabstop>
-  <tabstop>leRegistersQty</tabstop>
-  <tabstop>leData</tabstop>
+  <tabstop>leReadDeviceAddress</tabstop>
+  <tabstop>cbReadCode</tabstop>
+  <tabstop>leReadRegisterAddress</tabstop>
+  <tabstop>leReadRegistersQty</tabstop>
  </tabstops>
  <resources/>
  <connections/>
