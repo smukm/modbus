@@ -302,8 +302,6 @@ void MainWindow::onPollingTimeout() {
     if (m_modbusManager && m_modbusManager->isConnected()) {
         sendReadData();
     } else {
-        //m_pollingTimer->stop();
-        //ui->cbPolling->setChecked(false);
         stopPolling();
         m_logManager->addLog("Опрос остановлен: порт отключен");
     }
