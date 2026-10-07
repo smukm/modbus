@@ -8,7 +8,7 @@ void LogManager::addLog(const QString &message, bool isError) {
 
     QStandardItem* item = new QStandardItem(logEntry);
     if (isError) {
-         item->setForeground(Qt::darkRed);
+         item->setForeground(Qt::red);
     }
     appendRow(item);
 

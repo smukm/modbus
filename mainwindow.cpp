@@ -291,6 +291,10 @@ void MainWindow::sendReadData() {
         return;
     }
 
+    if (m_modbusManager->isProcessing()) {
+        return;
+    }
+
     // Парсинг базовых значений из UI (с минимальной проверкой на пустоту)
     bool okAddr, okQty, okDev;
     quint8 deviceAddr = ui->leReadDeviceAddress->text().trimmed().toInt(&okDev, 0);

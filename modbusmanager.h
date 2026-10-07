@@ -37,6 +37,7 @@ public:
     void connectToDevice(const ModbusConnectionSettings &settings);
     void disconnectFromDevice();
     bool isConnected() const;
+    bool isProcessing() const { return m_isProcessing; }
 
     // Методы для отправки запросов (скрывают сложность QModbusDataUnit)
     void sendReadRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, quint16 count);
