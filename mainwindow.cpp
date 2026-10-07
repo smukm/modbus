@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "modbusvalidator.h"
+#include "settingsmanager.h"
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -65,14 +66,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Первичная инициализация элементов интерфейса
     createMenu();
-    //fillSettings();
     m_uiController->initializePortSettingsCombo();
+    loadSettings();
     m_uiController->initializeCommandWidgets();
     m_uiController->setDisconnectedState();
+    loadLastCommandParams();
     setPorts();
 
     // Подключение кнопок интерфейса к слотам
-    connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onApplySettings);
+    connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onOpenPort);
     connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onStartReading);
     connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
     connect(ui->btnClearLogs, &QPushButton::clicked, this, [this]() {
@@ -131,11 +133,91 @@ void MainWindow::setPorts() {
 }
 
 /**
+ * @brief Применяет сохраненные настройки
+ */
+void MainWindow::loadSettings() {
+    ModbusConnectionSettings savedSettings = SettingsManager::loadSettings();
+    if (!savedSettings.portName.isEmpty()) {
+        int portIndex = ui->cbPorts->findData(savedSettings.portName);
+        if (portIndex != -1) {
+            ui->cbPorts->setCurrentIndex(portIndex);
+        }
+    }
+    // Устанавливаем остальные параметры по их числовым значениям (data)
+    auto setComboByData = [](QComboBox *cb, int value) {
+        int idx = cb->findData(value);
+        if (idx != -1) cb->setCurrentIndex(idx);
+    };
+    setComboByData(ui->cbBaudRate, savedSettings.baudRate);
+    setComboByData(ui->cbParity,   savedSettings.parity);
+    setComboByData(ui->cbDataBits, savedSettings.dataBits);
+    setComboByData(ui->cbStopBits, savedSettings.stopBits);
+}
+
+/**
+ * @brief Сохраняет настройки в json
+ */
+void MainWindow::saveSettings(const ModbusConnectionSettings& settings) {
+    if (SettingsManager::saveSettings(settings)) {
+        m_logManager->addLog("💾 Настройки порта сохранены.");
+    } else {
+        m_logManager->addLog("⚠ Не удалось сохранить настройки порта.", true);
+    }
+}
+
+/**
+ * @brief Загружает последние параметры чтения/записи в UI
+ */
+void MainWindow::loadLastCommandParams() {
+    ModbusLastParams params = SettingsManager::loadLastParams();
+
+    // Восстанавливаем параметры чтения
+    ui->leReadDeviceAddress->setText(QString::number(params.readDeviceAddr));
+    int readCodeIdx = ui->cbReadCode->findData(params.readFuncCode);
+    if (readCodeIdx != -1) ui->cbReadCode->setCurrentIndex(readCodeIdx);
+
+    ui->leReadRegisterAddress->setText(QString::number(params.readStartAddr));
+    ui->leReadRegistersQty->setText(QString::number(params.readCount));
+
+    // Восстанавливаем параметры записи
+    ui->leWriteDeviceAddress->setText(QString::number(params.writeDeviceAddr));
+
+    int writeCodeIdx = ui->cbWriteCode->findData(params.writeFuncCode);
+    if (writeCodeIdx != -1) ui->cbWriteCode->setCurrentIndex(writeCodeIdx);
+
+    ui->leWriteRegisterAddress->setText(QString::number(params.writeStartAddr));
+    ui->leWriteRegistersQty->setText(QString::number(params.writeCount));
+    ui->leData->setText(params.writeData);
+}
+
+/**
+ * @brief Считывает текущие значения из UI и сохраняет их как "последние использованные"
+ */
+void MainWindow::saveLastCommandParams() {
+    ModbusLastParams params;
+
+    // Считываем параметры чтения
+    params.readDeviceAddr = ui->leReadDeviceAddress->text().trimmed().toUInt();
+    params.readFuncCode = static_cast<quint8>(ui->cbReadCode->currentData().toInt());
+    params.readStartAddr = ui->leReadRegisterAddress->text().trimmed().toUInt();
+    params.readCount = ui->leReadRegistersQty->text().trimmed().toUInt();
+
+    // Считываем параметры записи
+    params.writeDeviceAddr = ui->leWriteDeviceAddress->text().trimmed().toUInt();
+    params.writeFuncCode = static_cast<quint8>(ui->cbWriteCode->currentData().toInt());
+    params.writeStartAddr = ui->leWriteRegisterAddress->text().trimmed().toUInt();
+    params.writeCount = ui->leWriteRegistersQty->text().trimmed().toUInt();
+    params.writeData = ui->leData->text().trimmed();
+
+    SettingsManager::saveLastParams(params);
+}
+
+/**
  * @brief Слот-обработчик нажатия кнопки "Открыть/Закрыть" (btnApply).
  * Реализует логику переключения (toggle): если порт открыт — закрываем его,
  * если закрыт — считываем настройки из UI и открываем.
  */
-void MainWindow::onApplySettings() {
+void MainWindow::onOpenPort() {
     if (!m_modbusManager) {
         return;
      }
@@ -151,6 +233,9 @@ void MainWindow::onApplySettings() {
             .dataBits = ui->cbDataBits->currentData().toInt(),
             .stopBits = ui->cbStopBits->currentData().toInt()
         };
+
+        saveSettings(settings);
+
         m_modbusManager->connectToDevice(settings);
     }
 }
@@ -242,6 +327,8 @@ void MainWindow::sendReadData() {
         return;
     }
 
+    saveLastCommandParams();
+
     m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
 
     m_logManager->addLog("Запрос отправлен. Ожидание ответа...");
@@ -290,6 +377,8 @@ void MainWindow::sendWriteData() {
     }
 
     m_logManager->addLog(" Данные для записи: " + ui->leData->text().trimmed());
+
+    saveLastCommandParams();
 
     m_modbusManager->sendWriteRequest(deviceAddr, funcCode, startAddress, writeValues);
 }

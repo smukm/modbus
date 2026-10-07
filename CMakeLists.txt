@@ -28,6 +28,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         registerdatamodel.h registerdatamodel.cpp
         modbusvalidator.h modbusvalidator.cpp
         uicontroller.h uicontroller.cpp
+        settingsmanager.h settingsmanager.cpp
+        resources.qrc
 
     )
 # Define target properties for Android with Qt 6 as:

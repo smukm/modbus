@@ -37,9 +37,13 @@ private:
     void sendWriteData();
     void stopPolling();
     void createMenu();
+    void loadSettings();
+    void saveSettings(const ModbusConnectionSettings& settings);
+    void loadLastCommandParams();
+    void saveLastCommandParams();
 
 private slots:
-    void onApplySettings();
+    void onOpenPort();
     void onStartReading();
     void onStartWriting();
     void onPollingTimeout();
