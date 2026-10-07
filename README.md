@@ -25,5 +25,21 @@ A robust, feature-rich desktop application for communicating with Modbus RTU dev
 - **Build System**: CMake (recommended) or qmake.
 
 ## 🚀 Getting Started
-
+```bash
 ### 1. Clone the repository
+git clone https://github.com/smukm/modbus.git
+cd modbus
+
+### 2. Build the project
+**Using Qt Creator (Recommended):**
+1. Open Qt Creator.
+2. Go to `File` -> `Open File or Project...` and select the `CMakeLists.txt` (or `.pro` file).
+3. Configure the project with your preferred Desktop Qt Kit (e.g., MinGW 64-bit or MSVC).
+4. Click the green **Run** button (or press `Ctrl+R`).
+
+**Using Command Line (CMake):**
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
