@@ -17,6 +17,8 @@ public:
     // Первичная инициализация виджетов отправки команд
     void initializeCommandWidgets();
 
+    void initializePortSettingsCombo();
+
 private:
     Ui::MainWindow *m_ui;
 };

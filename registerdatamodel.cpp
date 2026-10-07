@@ -63,6 +63,7 @@ QString RegisterDataModel::getRegisterTypeName(QModbusDataUnit::RegisterType typ
         break;
     default:
         regType = "Unknown type";
+        break;
     }
 
     return regType;

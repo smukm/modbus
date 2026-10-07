@@ -46,7 +46,7 @@ signals:
     void connected();
     void disconnected();
     void errorOccurred(const QString &errorString);
-    void errorCriticalOccured(const QString &errorString);
+    void errorCriticalOccurred(const QString &errorString);
     void dataReceived(const QModbusDataUnit &data);
     void writeCompleted(); // Новый сигнал для уведомления об успешной записи
 

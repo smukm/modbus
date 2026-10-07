@@ -5,7 +5,7 @@ ValidationResult ModbusValidator::validateBasicParams(quint8 deviceAddr, quint8 
     result.isValid = true;
     result.errorMessage = "";
 
-    // 1. Проверка кода функции
+    // Проверка кода функции
     bool isRead = (funcCode == 0x01 || funcCode == 0x02 || funcCode == 0x03 || funcCode == 0x04);
     bool isWrite = (funcCode == 0x05 || funcCode == 0x06 || funcCode == 0x0F || funcCode == 0x10);
 
@@ -16,7 +16,7 @@ ValidationResult ModbusValidator::validateBasicParams(quint8 deviceAddr, quint8 
         return result;
     }
 
-    // 2. Проверка диапазонов адресов и количества
+    // Проверка диапазонов адресов и количества
     // (deviceAddr уже ограничен типом quint8 (0-255), но можно добавить проверку на широковещательный адрес, если нужно)
 
     if (startAddr > 65535) {

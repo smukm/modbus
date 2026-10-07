@@ -13,10 +13,6 @@ ModbusManager::ModbusManager(QObject *parent)
     , m_currentReply(nullptr)
     , m_isProcessing(false)
 {
-    // Создаем экземпляр RTU-клиента. Родителем является сам ModbusManager,
-    // что гарантирует автоматическое удаление при уничтожении менеджера.
-    //m_modbusDevice = new QModbusRtuSerialClient(this);
-
     // Подключаем сигналы для отслеживания состояния соединения и системных ошибок
     connect(m_modbusDevice, &QModbusClient::stateChanged, this, &ModbusManager::onStateChanged);
     connect(m_modbusDevice, &QModbusClient::errorOccurred, this, &ModbusManager::onErrorOccurred);
@@ -45,7 +41,7 @@ void ModbusManager::connectToDevice(const ModbusConnectionSettings &settings) {
     m_modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, settings.stopBits);
 
     if (!m_modbusDevice->connectDevice()) {
-        emit errorCriticalOccured("Не удалось начать подключение: " + m_modbusDevice->errorString());
+        emit errorCriticalOccurred("Не удалось начать подключение: " + m_modbusDevice->errorString());
     }
 }
 
@@ -60,6 +56,8 @@ void ModbusManager::disconnectFromDevice() {
     m_requestQueue.clear();
     m_isProcessing = false;
     if (m_currentReply) {
+        // Отключаем сигнал, чтобы onReplyFinished не вызвался для удаляемого объекта
+        disconnect(m_currentReply, &QModbusReply::finished, this, &ModbusManager::onReplyFinished);
         m_currentReply->deleteLater();
         m_currentReply = nullptr;
     }
@@ -197,9 +195,9 @@ void ModbusManager::processNextRequest() {
             onReplyFinished();
         }
     } else {
-        emit errorCriticalOccured(m_modbusDevice->errorString());
+        emit errorCriticalOccurred("Не удалось отправить запрос: " + m_modbusDevice->errorString());
         m_isProcessing = false;
-        processNextRequest(); // Продолжаем обработку очереди даже при ошибке отправки
+        processNextRequest(); // Чтобы очередь не застряла в случае ошибки
     }
 }
 
@@ -287,7 +285,7 @@ void ModbusManager::onReplyFinished() {
             );
     } else {
         // Другие ошибки (например, таймаут ожидания ответа или физический обрыв линии)
-        emit errorOccurred("Ошибка ответа Modbus:" + m_currentReply->errorString());
+        emit errorOccurred("Ошибка ответа Modbus: " + m_currentReply->errorString());
     }
 
     // Обязательно удаляем объект ответа, чтобы избежать утечки памяти

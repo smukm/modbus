@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
         m_logManager->addLog(error, true);
     });
 
-    connect(m_modbusManager, &ModbusManager::errorCriticalOccured, this, [this](const QString &error) {
+    connect(m_modbusManager, &ModbusManager::errorCriticalOccurred, this, [this](const QString &error) {
         stopPolling();
         QMessageBox::critical(this, "Ошибка", error);
     });
@@ -65,7 +65,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Первичная инициализация элементов интерфейса
     createMenu();
-    fillSettings();
+    //fillSettings();
+    m_uiController->initializePortSettingsCombo();
     m_uiController->initializeCommandWidgets();
     m_uiController->setDisconnectedState();
     setPorts();
@@ -130,47 +131,6 @@ void MainWindow::setPorts() {
 }
 
 /**
- * @brief Заполняет ComboBox-ы настройками порта.
- */
-void MainWindow::fillSettings() {
-    // Скорость порта
-    ui->cbBaudRate->clear();
-    ui->cbBaudRate->addItem("1200", QSerialPort::Baud1200);
-    ui->cbBaudRate->addItem("2400", QSerialPort::Baud2400);
-    ui->cbBaudRate->addItem("4800", QSerialPort::Baud4800);
-    ui->cbBaudRate->addItem("9600", QSerialPort::Baud9600);
-    ui->cbBaudRate->addItem("19200", QSerialPort::Baud19200);
-    ui->cbBaudRate->addItem("38400", QSerialPort::Baud38400);
-    ui->cbBaudRate->addItem("57600", QSerialPort::Baud57600);
-    ui->cbBaudRate->addItem("115200", QSerialPort::Baud115200);
-    ui->cbBaudRate->setCurrentText("9600"); // Выбираем по тексту
-
-    // Биты данных
-    ui->cbDataBits->clear();
-    ui->cbDataBits->addItem("5 бит", QSerialPort::Data5);
-    ui->cbDataBits->addItem("6 бит", QSerialPort::Data6);
-    ui->cbDataBits->addItem("7 бит", QSerialPort::Data7);
-    ui->cbDataBits->addItem("8 бит", QSerialPort::Data8);
-    ui->cbDataBits->setCurrentText("8 бит");
-
-    // Четность
-    ui->cbParity->clear();
-    ui->cbParity->addItem("Без контроля четности (None)", QSerialPort::NoParity);
-    ui->cbParity->addItem("Четный (Even)", QSerialPort::EvenParity);
-    ui->cbParity->addItem("Нечетный (Odd)", QSerialPort::OddParity);
-    ui->cbParity->addItem("Space", QSerialPort::SpaceParity);
-    ui->cbParity->addItem("Mark", QSerialPort::MarkParity);
-    ui->cbParity->setCurrentText("Без контроля четности (None)");
-
-    // Стоп-биты
-    ui->cbStopBits->clear();
-    ui->cbStopBits->addItem("1 стоп-бит", QSerialPort::OneStop);
-    ui->cbStopBits->addItem("1.5 стоп-бита", QSerialPort::OneAndHalfStop);
-    ui->cbStopBits->addItem("2 стоп-бита", QSerialPort::TwoStop);
-    ui->cbStopBits->setCurrentText("1 стоп-бит");
-}
-
-/**
  * @brief Слот-обработчик нажатия кнопки "Открыть/Закрыть" (btnApply).
  * Реализует логику переключения (toggle): если порт открыт — закрываем его,
  * если закрыт — считываем настройки из UI и открываем.
@@ -231,7 +191,6 @@ void MainWindow::onStartWriting() {
 void MainWindow::stopPolling() {
     if (m_pollingTimer->isActive()) {
         m_pollingTimer->stop();
-        //ui->cbPolling->setChecked(false);
         ui->btnSendData->setText("Выполнить");
         m_uiController->setPollingActiveState(false); // Делегируем изменение UI
         m_logManager->addLog("Периодический опрос остановлен");
@@ -326,7 +285,7 @@ void MainWindow::sendWriteData() {
     }
 
     if ((funcCode == 0x0F || funcCode == 0x10) && writeValues.size() != count) {
-        m_logManager->addLog(QString("Кол-во значений (%1) не совпадает с указанным (%2). Бу9дет записано %1.")
+        m_logManager->addLog(QString("Кол-во значений (%1) не совпадает с указанным (%2). Будет записано %1.")
                                  .arg(writeValues.size()).arg(count), true);
     }
 
