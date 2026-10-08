@@ -9,59 +9,61 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets SerialPort SerialBus)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets SerialPort SerialBus)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets SerialPort SerialBus LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets SerialPort SerialBus LinguistTools)
+
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    modbusmanager.h modbusmanager.cpp
+    logmanager.h logmanager.cpp
+    registerdatamodel.h registerdatamodel.cpp
+    modbusvalidator.h modbusvalidator.cpp
+    uicontroller.h uicontroller.cpp
+    settingsmanager.h settingsmanager.cpp
+    resources.qrc
 )
+
+set(TS_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/translations/ru_RU.ts
+    ${CMAKE_CURRENT_SOURCE_DIR}/translations/en_US.ts
+)
+
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(serialport
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        modbusmanager.h modbusmanager.cpp
-        logmanager.h logmanager.cpp
-        registerdatamodel.h registerdatamodel.cpp
-        modbusvalidator.h modbusvalidator.cpp
-        uicontroller.h uicontroller.cpp
-        settingsmanager.h settingsmanager.cpp
-        resources.qrc
-
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET serialport APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(serialport SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+        add_library(serialport SHARED ${PROJECT_SOURCES})
     else()
-        add_executable(serialport
-            ${PROJECT_SOURCES}
-        )
+        add_executable(serialport ${PROJECT_SOURCES})
     endif()
 endif()
 
-target_link_libraries(
-    serialport PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
-    PRIVATE Qt${QT_VERSION_MAJOR}::SerialPort
-    PRIVATE Qt${QT_VERSION_MAJOR}::SerialBus
+target_link_libraries(serialport PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::SerialPort
+    Qt${QT_VERSION_MAJOR}::SerialBus
 )
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
+# 2. Генерация переводов ПОСЛЕ создания executable.
+# RESOURCE_PREFIX автоматически добавит .qm файлы в ресурсы по пути /translations
+qt_add_translations(serialport
+    TS_FILES ${TS_FILES}
+    RESOURCE_PREFIX "/translations"
+)
+
+# Стандартные свойства проекта
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.serialport)
 endif()
+
 set_target_properties(serialport PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

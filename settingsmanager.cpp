@@ -6,6 +6,7 @@
 #include <QStandardPaths>
 #include <QTextStream>
 #include <QDebug>
+#include <QObject>
 
 // Имя файла конфигурации
 static const QString CONFIG_FILE_NAME = "modbus_settings.json";
@@ -71,7 +72,7 @@ QJsonObject SettingsManager::loadRootObject()
         if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
             return doc.object();
         }
-        qWarning() << "SettingsManager: Ошибка парсинга JSON, используется пустой объект:" << parseError.errorString();
+        qWarning() << QObject::tr("SettingsManager: JSON parsing error, using empty object:") << parseError.errorString();
     }
     return QJsonObject(); // Возвращаем пустой объект, если файла нет или он битый
 }
@@ -82,7 +83,7 @@ bool SettingsManager::saveRootObject(const QJsonObject &rootObj)
     QFile file(configFilePath());
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        qWarning() << "SettingsManager: Не удалось открыть файл для записи:" << file.errorString();
+        qWarning() << QObject::tr("SettingsManager: Failed to open file for writing:") << file.errorString();
         return false;
     }
 

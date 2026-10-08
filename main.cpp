@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QTranslator>
+#include <QLocale>
 
 int main(int argc, char *argv[])
 {
@@ -9,6 +11,12 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(APP_NAME);
 
     QApplication a(argc, argv);
+    QTranslator translator;
+    if (translator.load(":/translations/ru_RU.qm")) {
+        a.installTranslator(&translator);
+    } else {
+        qWarning() << "❌ Не удалось загрузить файл перевода ru_RU.qm";
+    }
     MainWindow w;
 
     w.setWindowTitle(APP_NAME);

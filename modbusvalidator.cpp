@@ -1,4 +1,5 @@
 #include "modbusvalidator.h"
+#include <QObject>
 
 ValidationResult ModbusValidator::validateBasicParams(quint8 deviceAddr, quint8 funcCode, quint16 startAddr, quint16 count) {
     ValidationResult result;
@@ -11,7 +12,7 @@ ValidationResult ModbusValidator::validateBasicParams(quint8 deviceAddr, quint8 
 
     if (!isRead && !isWrite) {
         result.isValid = false;
-        result.errorMessage = QString("Неподдерживаемый код функции: 0x%1.\nПоддерживаются: 0x01-0x04 (чтение) и 0x05, 0x06, 0x0F, 0x10 (запись).")
+        result.errorMessage = QObject::tr("Unsupported function code: 0x%1.\nSupported: 0x01-0x04 (reading) и 0x05, 0x06, 0x0F, 0x10 (writing).")
                                   .arg(funcCode, 2, 16, QChar('0')).toUpper();
         return result;
     }
@@ -21,13 +22,13 @@ ValidationResult ModbusValidator::validateBasicParams(quint8 deviceAddr, quint8 
 
     if (startAddr > 65535) {
         result.isValid = false;
-        result.errorMessage = "Некорректный адрес регистра (должен быть в диапазоне 0-65535).";
+        result.errorMessage = QObject::tr("Invalid register address (must be in the range 0-65535).");
         return result;
     }
 
     if (count < 1 || count > 65535) {
         result.isValid = false;
-        result.errorMessage = "Некорректное количество регистров (должно быть в диапазоне 1-65535).";
+        result.errorMessage = QObject::tr("Invalid register count (must be in the range 1-65535).");
         return result;
     }
 
@@ -44,14 +45,14 @@ ValidationResult ModbusValidator::validateWriteData(quint8 funcCode, const QStri
 
     if (dataText.trimmed().isEmpty()) {
         result.isValid = false;
-        result.errorMessage = "Введите значение для записи!";
+        result.errorMessage = QObject::tr("Enter a value to write!");
         return result;
     }
 
     const QStringList parts = dataText.split(',', Qt::SkipEmptyParts);
     if (parts.isEmpty()) {
         result.isValid = false;
-        result.errorMessage = "Некорректный формат данных.";
+        result.errorMessage = QObject::tr("Invalid data format.");
         return result;
     }
 
@@ -62,7 +63,7 @@ ValidationResult ModbusValidator::validateWriteData(quint8 funcCode, const QStri
 
         if (!valOk || val < 0 || val > 0xFFFF) {
             result.isValid = false;
-            result.errorMessage = QString("Некорректное значение для записи: '%1'\nОжидается число от 0 до 65535 (или 0x0000-0xFFFF).").arg(part);
+            result.errorMessage = QObject::tr("Invalid value for writing: '%1'\nExpected a number from 0 to 65535 (or 0x0000-0xFFFF).").arg(part);
             return result;
         }
 
@@ -70,10 +71,10 @@ ValidationResult ModbusValidator::validateWriteData(quint8 funcCode, const QStri
         if (funcCode == 0x05 || funcCode == 0x0F) {
             if (val != 0 && val != 1 && val != 0xFF00 && val != 65280) {
                 result.isValid = false;
-                result.errorMessage = QString("Для функций 0x05/0x0F (Coils) допустимы только значения:\n"
-                                              "0 (или 0x00) — для выключения (OFF)\n"
-                                              "65280 (или 0xFF00) — для включения (ON)\n"
-                                              "Вы ввели: %1").arg(val);
+                result.errorMessage = QObject::tr("For functions 0x05/0x0F (Coils), only the following values are allowed:\n"
+                                         "0 (or 0x00) — for OFF\n"
+                                         "65280 (or 0xFF00) — for ON\n"
+                                         "You entered: %1").arg(val);
                 return result;
             }
             // Приводим 1 к стандартному 0xFF00

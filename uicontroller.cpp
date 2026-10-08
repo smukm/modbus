@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h" // Реальное определение UI
 #include <QSerialPort>
 #include <QComboBox>
+#include <QObject>
 
 UiController::UiController(Ui::MainWindow *ui) : m_ui(ui) {}
 
@@ -32,7 +33,7 @@ void UiController::setConnectedState() {
 
 void UiController::setDisconnectedState() {
     m_ui->btnApply->setEnabled(true);
-    m_ui->btnApply->setText("Открыть");
+    m_ui->btnApply->setText(QObject::tr("Connect"));
 
     // Разблокируем настройки порта
     m_ui->cbPorts->setEnabled(true);
@@ -64,19 +65,19 @@ void UiController::setPollingActiveState(bool isActive) {
     m_ui->leReadRegistersQty->setEnabled(!isActive);
 
     if (isActive) {
-        m_ui->btnSendData->setText("Стоп");
+        m_ui->btnSendData->setText(QObject::tr("Stop"));
     } else {
-        m_ui->btnSendData->setText("Выполнить");
+        m_ui->btnSendData->setText(QObject::tr("Execute"));
     }
 }
 
 void UiController::initializeCommandWidgets() {
     m_ui->leReadDeviceAddress->setText("1");
     m_ui->cbReadCode->clear();
-    m_ui->cbReadCode->addItem("01 (0x01) - Чтение дискретных выходов (Read Coils)", 0x01);
-    m_ui->cbReadCode->addItem("02 (0x02) - Чтение дискретных входов (Read Discrete Inputs)", 0x02);
-    m_ui->cbReadCode->addItem("03 (0x03) - Чтение регистров хранения (Read Holding Registers)", 0x03);
-    m_ui->cbReadCode->addItem("04 (0x04) - Чтение входных регистров (Read Input Registers)", 0x04);
+    m_ui->cbReadCode->addItem(QObject::tr("01 (0x01) - Read Coils"), 0x01);
+    m_ui->cbReadCode->addItem(QObject::tr("02 (0x02) - Read Discrete Inputs"), 0x02);
+    m_ui->cbReadCode->addItem(QObject::tr("03 (0x03) - Read Holding Registers"), 0x03);
+    m_ui->cbReadCode->addItem(QObject::tr("04 (0x04) - Read Input Registers"), 0x04);
     // Выбираем 0x03 по умолчанию
     m_ui->cbReadCode->setCurrentIndex(2);
     m_ui->leReadRegisterAddress->setText("0");
@@ -84,10 +85,10 @@ void UiController::initializeCommandWidgets() {
 
     m_ui->leWriteDeviceAddress->setText("1");
     m_ui->cbWriteCode->clear();
-    m_ui->cbWriteCode->addItem("05 (0x05) - Запись одного дискретного выхода (Write Single Coil)", 0x05);
-    m_ui->cbWriteCode->addItem("06 (0x06) - Запись одного регистра (Write Single Register)", 0x06);
-    m_ui->cbWriteCode->addItem("15 (0x0F) - Запись нескольких дискретных выходов (Write Multiple Coils)", 0x0F);
-    m_ui->cbWriteCode->addItem("16 (0x10) - Запись нескольких регистров (Write Multiple Registers)", 0x10);
+    m_ui->cbWriteCode->addItem(QObject::tr("05 (0x05) - Write Single Coil"), 0x05);
+    m_ui->cbWriteCode->addItem(QObject::tr("06 (0x06) - Write Single Register"), 0x06);
+    m_ui->cbWriteCode->addItem(QObject::tr("15 (0x0F) - Write Multiple Coils"), 0x0F);
+    m_ui->cbWriteCode->addItem(QObject::tr("16 (0x10) - Write Multiple Registers"), 0x10);
     // Выбираем 0x06 по умолчанию
     m_ui->cbWriteCode->setCurrentIndex(1);
     m_ui->leWriteRegisterAddress->setText("0");
@@ -112,25 +113,25 @@ void UiController::initializePortSettingsCombo() {
 
     // Биты данных
     m_ui->cbDataBits->clear();
-    m_ui->cbDataBits->addItem("5 бит", QSerialPort::Data5);
-    m_ui->cbDataBits->addItem("6 бит", QSerialPort::Data6);
-    m_ui->cbDataBits->addItem("7 бит", QSerialPort::Data7);
-    m_ui->cbDataBits->addItem("8 бит", QSerialPort::Data8);
-    m_ui->cbDataBits->setCurrentText("8 бит");
+    m_ui->cbDataBits->addItem(QObject::tr("5 bits"), QSerialPort::Data5);
+    m_ui->cbDataBits->addItem(QObject::tr("6 bits"), QSerialPort::Data6);
+    m_ui->cbDataBits->addItem(QObject::tr("7 bits"), QSerialPort::Data7);
+    m_ui->cbDataBits->addItem(QObject::tr("8 bits"), QSerialPort::Data8);
+    m_ui->cbDataBits->setCurrentText(QObject::tr("8 bits"));
 
     // Четность
     m_ui->cbParity->clear();
-    m_ui->cbParity->addItem("Без контроля четности (None)", QSerialPort::NoParity);
-    m_ui->cbParity->addItem("Четный (Even)", QSerialPort::EvenParity);
-    m_ui->cbParity->addItem("Нечетный (Odd)", QSerialPort::OddParity);
-    m_ui->cbParity->addItem("Space", QSerialPort::SpaceParity);
-    m_ui->cbParity->addItem("Mark", QSerialPort::MarkParity);
-    m_ui->cbParity->setCurrentText("Без контроля четности (None)");
+     m_ui->cbParity->addItem(QObject::tr("None"), QSerialPort::NoParity);
+     m_ui->cbParity->addItem(QObject::tr("Even"), QSerialPort::EvenParity);
+     m_ui->cbParity->addItem(QObject::tr("Odd"), QSerialPort::OddParity);
+     m_ui->cbParity->addItem(QObject::tr("Space"), QSerialPort::SpaceParity);
+     m_ui->cbParity->addItem(QObject::tr("Mark"), QSerialPort::MarkParity);
+     m_ui->cbParity->setCurrentText(QObject::tr("None"));
 
     // Стоп-биты
     m_ui->cbStopBits->clear();
-    m_ui->cbStopBits->addItem("1 стоп-бит", QSerialPort::OneStop);
-    m_ui->cbStopBits->addItem("1.5 стоп-бита", QSerialPort::OneAndHalfStop);
-    m_ui->cbStopBits->addItem("2 стоп-бита", QSerialPort::TwoStop);
-    m_ui->cbStopBits->setCurrentText("1 стоп-бит");
+     m_ui->cbStopBits->addItem(QObject::tr("1 stop bit"), QSerialPort::OneStop);
+     m_ui->cbStopBits->addItem(QObject::tr("1.5 stop bits"), QSerialPort::OneAndHalfStop);
+     m_ui->cbStopBits->addItem(QObject::tr("2 stop bits"), QSerialPort::TwoStop);
+     m_ui->cbStopBits->setCurrentText(QObject::tr("1 stop bit"));
 }

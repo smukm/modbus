@@ -41,7 +41,7 @@ void ModbusManager::connectToDevice(const ModbusConnectionSettings &settings) {
     m_modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, settings.stopBits);
 
     if (!m_modbusDevice->connectDevice()) {
-        emit errorCriticalOccurred("Не удалось начать подключение: " + m_modbusDevice->errorString());
+        emit errorCriticalOccurred(tr("Failed to initiate connection: ") + m_modbusDevice->errorString());
     }
 }
 
@@ -85,7 +85,7 @@ void ModbusManager::sendReadRequest(
     quint16 count
     ) {
     if (!isConnected()) {
-        emit errorOccurred("Порт не открыт!");
+        emit errorOccurred(tr("Port is not open!"));
         return;
     };
 
@@ -114,12 +114,12 @@ void ModbusManager::sendWriteRequest(
     const QVector<quint16> &values)
 {
     if (!isConnected()) {
-        emit errorOccurred("Порт не открыт!");
+        emit errorOccurred(tr("Port is not open!"));
         return;
     }
 
     if (values.isEmpty()) {
-        emit errorOccurred("Нет данных для записи!");
+        emit errorOccurred(tr("No data to write!"));
         return;
     }
 
@@ -158,7 +158,7 @@ void ModbusManager::processNextRequest() {
         case 0x03: type = QModbusDataUnit::HoldingRegisters; break;
         case 0x04: type = QModbusDataUnit::InputRegisters; break;
         default:
-            emit errorOccurred("Неподдерживаемый код функции для чтения");
+            emit errorOccurred(tr("Unsupported function code for reading"));
             m_isProcessing = false;
             processNextRequest(); // Пробуем следующий запрос, если этот невалиден
             return;
@@ -174,7 +174,7 @@ void ModbusManager::processNextRequest() {
         } else if (m_currentRequest.funcCode == 0x06 || m_currentRequest.funcCode == 0x10) {
             type = QModbusDataUnit::HoldingRegisters;
         } else {
-            emit errorOccurred("Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)");
+            emit errorOccurred(tr("Unsupported function code for writing (supported 0x05, 0x06, 0x0F, 0x10)"));
             m_isProcessing = false;
             processNextRequest();
             return;
@@ -195,7 +195,7 @@ void ModbusManager::processNextRequest() {
             onReplyFinished();
         }
     } else {
-        emit errorCriticalOccurred("Не удалось отправить запрос: " + m_modbusDevice->errorString());
+        emit errorCriticalOccurred(tr("Failed to send request: ") + m_modbusDevice->errorString());
         m_isProcessing = false;
         processNextRequest(); // Чтобы очередь не застряла в случае ошибки
     }
@@ -208,27 +208,27 @@ void ModbusManager::processNextRequest() {
 void ModbusManager::onStateChanged(QModbusDevice::State state) {
     switch (state) {
     case QModbusDevice::UnconnectedState:
-        qDebug() << "ModbusManager: Устройство отключено.";
+        qDebug() << tr("ModbusManager: Device disconnected.");
         emit disconnected();
         break;
 
     case QModbusDevice::ConnectedState:
-        qDebug() << "ModbusManager: Устройство успешно подключено.";
+        qDebug() << tr("ModbusManager: Device successfully connected.");
         emit connected();
         break;
 
     case QModbusDevice::ConnectingState:
-        qDebug() << "ModbusManager: Попытка подключения...";
+        qDebug() << tr("ModbusManager: Attempting to connect...");
         // Сигнал не отправляем, так как процесс еще идет
         break;
 
     case QModbusDevice::ClosingState:
-        qDebug() << "ModbusManager: Закрытие соединения...";
+        qDebug() << tr("ModbusManager: Closing connection...");
         // Сигнал не отправляем, дождемся UnconnectedState
         break;
 
     default:
-        qWarning() << "ModbusManager: Неизвестное состояние устройства.";
+        qWarning() << tr("ModbusManager: Unknown device state.");
         break;
     }
 }
@@ -260,28 +260,28 @@ void ModbusManager::onReplyFinished() {
     } else if (m_currentReply->error() == QModbusDevice::ProtocolError) {
         // Специфическая ошибка: устройство ответило, но вернуло Modbus Exception (исключение).
         // Это означает, что запрос был получен, но отвергнут устройством (неверный адрес, функция и т.д.).
-        QString exceptionInfo = "Неизвестная ошибка";
+        QString exceptionInfo = tr("Unknown error");
         if (m_currentReply->rawResult().exceptionCode() == 0x01) {
-            exceptionInfo = "Illegal Function (Функция не поддерживается устройством)";
+            exceptionInfo = tr("Illegal Function (Function not supported by device)");
         } else if (m_currentReply->rawResult().exceptionCode() == 0x02) {
-            exceptionInfo = "Illegal Data Address (Такого адреса регистра/катушки не существует или он недоступен)";
+            exceptionInfo = tr("Illegal Data Address (Such register/coil address does not exist or is unavailable)");
         } else if (m_currentReply->rawResult().exceptionCode() == 0x03) {
-            exceptionInfo = "Illegal Data Value (Значение выходит за допустимые пределы)";
+            exceptionInfo = tr("Illegal Data Value (Value is out of allowed range)");
         } else if (m_currentReply->rawResult().exceptionCode() == 0x04) {
-            exceptionInfo = "Slave Device Failure (Внутренняя ошибка устройства)";
+            exceptionInfo = tr("Slave Device Failure (Internal device error)");
         } else if (m_currentReply->rawResult().exceptionCode() == 0x06) {
-            exceptionInfo = "Slave Device Busy (Устройство занято)";
+            exceptionInfo = tr("Slave Device Busy (Device is busy)");
         }
 
         emit errorOccurred(
-            QString("Устройство отвергло запрос (Modbus Exception).\n"
-                    "Код ошибки: %1\n"
-                    "Расшифровка: %2\n"
-                    "Адрес устройства (Slave ID): %3\n"
-                    "Адрес регистра: %4\n\n"
-                    "Что проверить:\n"
-                    "1. Точно ли этот адрес существует в паспорте устройства?\n"
-                    "2. Не перепутали ли вы функцию (0x05 для катушек, 0x06 для числовых регистров)?")
+            tr("Device rejected the request (Modbus Exception).\n"
+                    "Error code: %1\n"
+                    "Description: %2\n"
+                    "Device address (Slave ID): %3\n"
+                    "Register address: %4\n\n"
+                    "What to check:\n"
+                    "1. Does this address exactly exist in the device manual?\n"
+                    "2. Did you confuse the function (0x05 for coils, 0x06 for numeric registers)?")
                 .arg(m_currentReply->rawResult().exceptionCode())
                 .arg(exceptionInfo)
                 .arg(m_currentRequest.serverAddress)
@@ -290,18 +290,18 @@ void ModbusManager::onReplyFinished() {
     } else if (m_currentReply->error() == QModbusDevice::TimeoutError) {
         // Ошибка таймаута: устройство не ответило в течение заданного времени (по умолчанию 1000 мс)
         emit errorOccurred(
-            QString("Таймаут ожидания ответа от устройства.\n"
-                    "Адрес устройства (Slave ID): %1\n"
-                    "Адрес регистра: %2\n\n")
+            tr("Timeout waiting for device response.\n"
+                    "Device address (Slave ID): %1\n"
+                    "Register address: %2\n\n")
                 .arg(m_currentRequest.serverAddress)
                 .arg(m_currentRequest.startAddress)
             );
     } else {
         // Другие ошибки (например, физический обрыв линии, ошибка чтения/записи на уровне ОС)
         emit errorOccurred(
-            QString("Ошибка ответа Modbus: %1\n"
-                    "Адрес устройства (Slave ID): %2\n"
-                    "Адрес регистра: %3")
+            tr("Modbus response error: %1\n"
+                    "Device address (Slave ID): %2\n"
+                    "Register address: %3")
                 .arg(m_currentReply->errorString())
                 .arg(m_currentRequest.serverAddress)
                 .arg(m_currentRequest.startAddress)

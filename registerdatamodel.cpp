@@ -3,9 +3,9 @@
 RegisterDataModel::RegisterDataModel(QObject* parent) : QStandardItemModel(parent) {
     setColumnCount(3);
     setHorizontalHeaderLabels({
-        "Адрес регистра",
-        "Значение",
-        "Тип регистра"
+        tr("Register Address"),
+        tr("Value"),
+        tr("Register Type")
     });
 }
 
@@ -50,19 +50,19 @@ QString RegisterDataModel::getRegisterTypeName(QModbusDataUnit::RegisterType typ
     QString regType;
     switch (type) {
     case QModbusDataUnit::RegisterType::HoldingRegisters:
-        regType = "Holding Registers";
+        regType = tr("Holding Registers");
         break;
     case QModbusDataUnit::RegisterType::InputRegisters:
-        regType = "Input Registers";
+        regType = tr("Input Registers");
         break;
     case QModbusDataUnit::RegisterType::DiscreteInputs:
-        regType = "Discrete Inputs";
+        regType = tr("Discrete Inputs");
         break;
     case QModbusDataUnit::RegisterType::Coils:
-        regType = "Coils";
+        regType = tr("Coils");
         break;
     default:
-        regType = "Unknown type";
+        regType = tr("Unknown type");
         break;
     }
 
