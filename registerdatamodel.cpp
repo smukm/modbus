@@ -1,8 +1,9 @@
 #include "registerdatamodel.h"
 
 RegisterDataModel::RegisterDataModel(QObject* parent) : QStandardItemModel(parent) {
-    setColumnCount(3);
+    setColumnCount(4);
     setHorizontalHeaderLabels({
+        tr("SlaveId"),
         tr("Register Address"),
         tr("Value"),
         tr("Register Type")
@@ -25,14 +26,17 @@ void RegisterDataModel::updateData(quint8 serverAddress, const QModbusDataUnit &
         auto it = m_addressMap.find(key);
 
         if (it != m_addressMap.end()) {
-            // Строка найдена — обновляем только значение (столбец 1)
-            item(it.value(), 1)->setText(valueStr);
+            // Строка найдена — обновляем только значение (столбец 2)
+            item(it.value(), 2)->setText(valueStr);
         } else {
             // Добавляем новую строку
             int newRow = rowCount();
+            QString slaveId = QString("%1").arg(serverAddress);
             QString regAddressStr = QString("%1 (0x%2)")
                                         .arg(regAddress)
-                                        .arg(regAddress, 4, 16, QChar('0')).toUpper(); // ИСПРАВЛЕНО: '0' вместо 'O'
+                                        .arg(regAddress, 4, 16, QChar('0')).toUpper();
+
+            QStandardItem* slaveIdItem = new QStandardItem(slaveId);
 
             QStandardItem* addrItem = new QStandardItem(regAddressStr);
             addrItem->setData(regAddress, Qt::UserRole); // Сохраняем адрес как данные
@@ -40,7 +44,7 @@ void RegisterDataModel::updateData(quint8 serverAddress, const QModbusDataUnit &
             QStandardItem* valueItem = new QStandardItem(valueStr);
             QStandardItem* typeItem = new QStandardItem(regType);
 
-            appendRow({addrItem, valueItem, typeItem});
+            appendRow({slaveIdItem, addrItem, valueItem, typeItem});
             m_addressMap.insert(key, newRow); // Кэшируем
         }
     }
