@@ -39,7 +39,7 @@ public:
     bool isConnected() const;
     bool isProcessing() const { return m_isProcessing; }
 
-    // Методы для отправки запросов (скрывают сложность QModbusDataUnit)
+    // Методы для отправки запросов
     void sendReadRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, quint16 count);
     void sendWriteRequest(quint8 serverAddress, quint8 funcCode, quint16 startAddress, const QVector<quint16> &values);
 
@@ -48,8 +48,8 @@ signals:
     void disconnected();
     void errorOccurred(const QString &errorString);
     void errorCriticalOccurred(const QString &errorString);
-    void dataReceived(const QModbusDataUnit &data);
-    void writeCompleted(); // Новый сигнал для уведомления об успешной записи
+    void dataReceived(quint8 serverAddress, const QModbusDataUnit &data);
+    void writeCompleted();
 
 private slots:
     void onStateChanged(QModbusDevice::State state);

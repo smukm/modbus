@@ -55,9 +55,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     // Подключение сигнала получения данных к специализированному слоту обработки
-    connect(m_modbusManager, &ModbusManager::dataReceived, this, [this](const QModbusDataUnit &unit) {
-        m_registerModel->updateData(unit);
-        m_logManager->addLog("Данные успешно получены и обновлены в таблице.");
+    connect(m_modbusManager, &ModbusManager::dataReceived, this, [this](quint8 serverAddress, const QModbusDataUnit &unit) {
+        m_registerModel->updateData(serverAddress, unit);
+        m_logManager->addLog(QString("Данные получены от устройства #%1").arg(serverAddress));
     });
     // Новое подключение для отслеживания успешного завершения записи
     connect(m_modbusManager, &ModbusManager::writeCompleted, this, [this]() {
@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Первичная инициализация элементов интерфейса
     createMenu();
     m_uiController->initializePortSettingsCombo();
-    loadSettings();
+    loadPortSettings();
     m_uiController->initializeCommandWidgets();
     m_uiController->setDisconnectedState();
     loadLastCommandParams();
@@ -135,8 +135,8 @@ void MainWindow::setPorts() {
 /**
  * @brief Применяет сохраненные настройки
  */
-void MainWindow::loadSettings() {
-    ModbusConnectionSettings savedSettings = SettingsManager::loadSettings();
+void MainWindow::loadPortSettings() {
+    ModbusConnectionSettings savedSettings = SettingsManager::loadPortSettings();
     if (!savedSettings.portName.isEmpty()) {
         int portIndex = ui->cbPorts->findData(savedSettings.portName);
         if (portIndex != -1) {
@@ -157,8 +157,8 @@ void MainWindow::loadSettings() {
 /**
  * @brief Сохраняет настройки в json
  */
-void MainWindow::saveSettings(const ModbusConnectionSettings& settings) {
-    if (SettingsManager::saveSettings(settings)) {
+void MainWindow::savePortSettings(const ModbusConnectionSettings& settings) {
+    if (SettingsManager::savePortSettings(settings)) {
         m_logManager->addLog("💾 Настройки порта сохранены.");
     } else {
         m_logManager->addLog("⚠ Не удалось сохранить настройки порта.", true);
@@ -172,7 +172,7 @@ void MainWindow::loadLastCommandParams() {
     ModbusLastParams params = SettingsManager::loadLastParams();
 
     // Восстанавливаем параметры чтения
-    ui->leReadDeviceAddress->setText(QString::number(params.readDeviceAddr));
+    ui->leReadDeviceAddress->setText(params.readDeviceAddrs);
     int readCodeIdx = ui->cbReadCode->findData(params.readFuncCode);
     if (readCodeIdx != -1) ui->cbReadCode->setCurrentIndex(readCodeIdx);
 
@@ -197,7 +197,7 @@ void MainWindow::saveLastCommandParams() {
     ModbusLastParams params;
 
     // Считываем параметры чтения
-    params.readDeviceAddr = ui->leReadDeviceAddress->text().trimmed().toUInt();
+    params.readDeviceAddrs = ui->leReadDeviceAddress->text().trimmed();
     params.readFuncCode = static_cast<quint8>(ui->cbReadCode->currentData().toInt());
     params.readStartAddr = ui->leReadRegisterAddress->text().trimmed().toUInt();
     params.readCount = ui->leReadRegistersQty->text().trimmed().toUInt();
@@ -234,7 +234,7 @@ void MainWindow::onOpenPort() {
             .stopBits = ui->cbStopBits->currentData().toInt()
         };
 
-        saveSettings(settings);
+        savePortSettings(settings);
 
         m_modbusManager->connectToDevice(settings);
     }
@@ -295,18 +295,27 @@ void MainWindow::sendReadData() {
         return;
     }
 
-    // Парсинг базовых значений из UI (с минимальной проверкой на пустоту)
-    bool okAddr, okQty, okDev;
-    quint8 deviceAddr = ui->leReadDeviceAddress->text().trimmed().toInt(&okDev, 0);
+    // Получаем и парсим список адресов
+    QString addrsText = ui->leReadDeviceAddress->text().trimmed();
+    if (addrsText.isEmpty()) {
+        QMessageBox::warning(this, "Ошибка ввода", "Введите адрес устройства!");
+        stopPolling();
+        return;
+    }
+
+    const QStringList addrStrings = addrsText.split(',', Qt::SkipEmptyParts);
+    if (addrStrings.isEmpty()) {
+        QMessageBox::warning(this, "Ошибка ввода", "Некорректный формат списка адресов!");
+        stopPolling();
+        return;
+    }
+
+    // Парсим общие параметры (они одинаковы для всех устройств в этом запросе)
+    bool okAddr, okQty;
     quint8 funcCode = static_cast<quint8>(ui->cbReadCode->currentData().toInt());
     quint16 startAddress = ui->leReadRegisterAddress->text().trimmed().toInt(&okAddr, 0);
     quint16 count = ui->leReadRegistersQty->text().trimmed().toInt(&okQty, 0);
 
-    if (!okDev || deviceAddr > 255) {
-        QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес устройства (0-255)!");
-        stopPolling();
-        return;
-    }
     if (!okAddr || startAddress > 65535) {
         QMessageBox::warning(this, "Ошибка ввода", "Некорректный адрес регистра (0-65535)!");
         stopPolling();
@@ -317,25 +326,41 @@ void MainWindow::sendReadData() {
         stopPolling();
         return;
     }
-    // Логируем параметры только при старте опроса, чтобы не спамить
-     if (!m_pollingTimer->isActive() || m_registerModel->rowCount() == 0) {
-         m_logManager->addLog(QString("Чтение: %1 | Addr: %2, Reg: %3, Qty: %4")
-                                  .arg(ui->cbReadCode->currentText()).arg(deviceAddr).arg(startAddress).arg(count));
-     }
 
-    // Делегируем сложную валидацию специализированному классу
-    ValidationResult basicCheck = ModbusValidator::validateBasicParams(deviceAddr, funcCode, startAddress, count);
-    if (!basicCheck.isValid) {
-        QMessageBox::warning(this, "Ошибка валидации", basicCheck.errorMessage);
-        stopPolling();
-        return;
+    // Проходим по каждому адресу и ставим запрос в очередь
+    int successCount = 0;
+    for (const QString &addrStr : addrStrings) {
+        bool okDev;
+        // Modbus допустимый диапазон адресов устройств: 1-247 (0 - широковещательный)
+        quint8 deviceAddr = addrStr.trimmed().toUInt(&okDev);
+
+        if (!okDev || deviceAddr == 0 || deviceAddr > 247) {
+            m_logManager->addLog(QString("⚠ Пропуск некорректного адреса устройства: '%1' (допустимо 1-247)").arg(addrStr), true);
+            continue;
+        }
+
+        ValidationResult basicCheck = ModbusValidator::validateBasicParams(deviceAddr, funcCode, startAddress, count);
+        if (!basicCheck.isValid) {
+            m_logManager->addLog(QString("⚠ Ошибка валидации для адреса %1: %2").arg(deviceAddr).arg(basicCheck.errorMessage), true);
+            continue;
+        }
+
+        // Ставим запрос в очередь
+        m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
+        successCount++;
     }
 
-    saveLastCommandParams();
 
-    m_modbusManager->sendReadRequest(deviceAddr, funcCode, startAddress, count);
+    if (successCount > 0) {
+        saveLastCommandParams();
 
-    m_logManager->addLog("Запрос отправлен. Ожидание ответа...");
+        if (!m_pollingTimer->isActive() || m_registerModel->rowCount() == 0) {
+            m_logManager->addLog(QString("📡 Отправлено запросов: %1. Ожидание ответов...").arg(successCount));
+        }
+    } else {
+        m_logManager->addLog("❌ Не удалось сформировать ни одного корректного запроса.", true);
+        stopPolling();
+    }
 }
 
 void MainWindow::sendWriteData() {

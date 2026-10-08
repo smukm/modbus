@@ -4,7 +4,7 @@
 
 struct ModbusLastParams {
     // Параметры чтения
-    quint8 readDeviceAddr = 1;
+    QString readDeviceAddrs = "1";
     quint8 readFuncCode = 0x03;
     quint16 readStartAddr = 0;
     quint16 readCount = 1;
@@ -24,11 +24,11 @@ public:
     static QString configFilePath();
 
     // Сохраняет настройки порта в JSON-файл. Возвращает true при успехе.
-    static bool saveSettings(const ModbusConnectionSettings &settings);
+    static bool savePortSettings(const ModbusConnectionSettings &settings);
 
     // Загружает настройки порта из JSON-файла.
     // Если файла нет или он поврежден, возвращает настройки по умолчанию.
-    static ModbusConnectionSettings loadSettings();
+    static ModbusConnectionSettings loadPortSettings();
 
     // Проверяет, существует ли файл конфигурации
     static bool settingsExist();

@@ -37,8 +37,8 @@ private:
     void sendWriteData();
     void stopPolling();
     void createMenu();
-    void loadSettings();
-    void saveSettings(const ModbusConnectionSettings& settings);
+    void loadPortSettings();
+    void savePortSettings(const ModbusConnectionSettings& settings);
     void loadLastCommandParams();
     void saveLastCommandParams();
 

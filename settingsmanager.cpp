@@ -96,7 +96,7 @@ bool SettingsManager::saveRootObject(const QJsonObject &rootObj)
 // Методы для настроек порта
 // =========================================================================
 
-bool SettingsManager::saveSettings(const ModbusConnectionSettings &settings)
+bool SettingsManager::savePortSettings(const ModbusConnectionSettings &settings)
 {
     QJsonObject rootObj = loadRootObject();
 
@@ -112,7 +112,7 @@ bool SettingsManager::saveSettings(const ModbusConnectionSettings &settings)
     return saveRootObject(rootObj);
 }
 
-ModbusConnectionSettings SettingsManager::loadSettings()
+ModbusConnectionSettings SettingsManager::loadPortSettings()
 {
     ModbusConnectionSettings defaults;
     defaults.portName  = "";
@@ -152,7 +152,7 @@ bool SettingsManager::saveLastParams(const ModbusLastParams &params)
 
     // Формируем ветку чтения
     QJsonObject readObj;
-    readObj[KEY_READ_DEV_ADDR]   = static_cast<int>(params.readDeviceAddr);
+    readObj[KEY_READ_DEV_ADDR]   = params.readDeviceAddrs;
     readObj[KEY_READ_FUNC_CODE]  = static_cast<int>(params.readFuncCode);
     readObj[KEY_READ_START_ADDR] = static_cast<int>(params.readStartAddr);
     readObj[KEY_READ_COUNT]      = static_cast<int>(params.readCount);
@@ -180,7 +180,7 @@ ModbusLastParams SettingsManager::loadLastParams()
     // Загружаем ветку чтения, если она существует
     if (rootObj.contains(KEY_READ_SETTINGS)) {
         QJsonObject readObj = rootObj[KEY_READ_SETTINGS].toObject();
-        defaults.readDeviceAddr = static_cast<quint8>(readObj[KEY_READ_DEV_ADDR].toInt(defaults.readDeviceAddr));
+        defaults.readDeviceAddrs = readObj[KEY_READ_DEV_ADDR].toString(defaults.readDeviceAddrs);
         defaults.readFuncCode   = static_cast<quint8>(readObj[KEY_READ_FUNC_CODE].toInt(defaults.readFuncCode));
         defaults.readStartAddr  = static_cast<quint16>(readObj[KEY_READ_START_ADDR].toInt(defaults.readStartAddr));
         defaults.readCount      = static_cast<quint16>(readObj[KEY_READ_COUNT].toInt(defaults.readCount));

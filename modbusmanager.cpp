@@ -253,7 +253,7 @@ void ModbusManager::onReplyFinished() {
         // Запрос выполнен успешно, извлекаем блок данных и отправляем его в UI
         if (m_currentRequest.type == ModbusRequest::Type::Read) {
             const QModbusDataUnit unit = m_currentReply->result();
-            emit dataReceived(unit);
+            emit dataReceived(m_currentRequest.serverAddress, unit);
         } else {
             emit writeCompleted();
         }
@@ -276,16 +276,36 @@ void ModbusManager::onReplyFinished() {
         emit errorOccurred(
             QString("Устройство отвергло запрос (Modbus Exception).\n"
                     "Код ошибки: %1\n"
-                    "Расшифровка: %2\n\n"
+                    "Расшифровка: %2\n"
+                    "Адрес устройства (Slave ID): %3\n"
+                    "Адрес регистра: %4\n\n"
                     "Что проверить:\n"
                     "1. Точно ли этот адрес существует в паспорте устройства?\n"
                     "2. Не перепутали ли вы функцию (0x05 для катушек, 0x06 для числовых регистров)?")
                 .arg(m_currentReply->rawResult().exceptionCode())
                 .arg(exceptionInfo)
+                .arg(m_currentRequest.serverAddress)
+                .arg(m_currentRequest.startAddress)
+            );
+    } else if (m_currentReply->error() == QModbusDevice::TimeoutError) {
+        // Ошибка таймаута: устройство не ответило в течение заданного времени (по умолчанию 1000 мс)
+        emit errorOccurred(
+            QString("Таймаут ожидания ответа от устройства.\n"
+                    "Адрес устройства (Slave ID): %1\n"
+                    "Адрес регистра: %2\n\n")
+                .arg(m_currentRequest.serverAddress)
+                .arg(m_currentRequest.startAddress)
             );
     } else {
-        // Другие ошибки (например, таймаут ожидания ответа или физический обрыв линии)
-        emit errorOccurred("Ошибка ответа Modbus: " + m_currentReply->errorString());
+        // Другие ошибки (например, физический обрыв линии, ошибка чтения/записи на уровне ОС)
+        emit errorOccurred(
+            QString("Ошибка ответа Modbus: %1\n"
+                    "Адрес устройства (Slave ID): %2\n"
+                    "Адрес регистра: %3")
+                .arg(m_currentReply->errorString())
+                .arg(m_currentRequest.serverAddress)
+                .arg(m_currentRequest.startAddress)
+            );
     }
 
     // Обязательно удаляем объект ответа, чтобы избежать утечки памяти

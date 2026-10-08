@@ -10,7 +10,7 @@ RegisterDataModel::RegisterDataModel(QObject* parent) : QStandardItemModel(paren
 }
 
 
-void RegisterDataModel::updateData(const QModbusDataUnit &unit) {
+void RegisterDataModel::updateData(quint8 serverAddress, const QModbusDataUnit &unit) {
     for (uint i = 0; i < unit.valueCount(); ++i) {
         int regAddress = unit.startAddress() + static_cast<int>(i);
         quint16 regValue = unit.value(i);
@@ -21,7 +21,7 @@ void RegisterDataModel::updateData(const QModbusDataUnit &unit) {
         // Ищем существующую строку с тем же адресом и типом
         QString regType = getRegisterTypeName(unit.registerType());
 
-        QPair<int, QString> key = {regAddress, regType};
+        QString key = QString("%1_%2_%3").arg(serverAddress).arg(regAddress).arg(regType);
         auto it = m_addressMap.find(key);
 
         if (it != m_addressMap.end()) {

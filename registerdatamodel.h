@@ -12,11 +12,11 @@ public:
     explicit RegisterDataModel(QObject* parent = nullptr);
 
     // Главный метод: принимает сырые данные и сам решает, обновить строку или создать новую
-    void updateData(const QModbusDataUnit &unit);
+    void updateData(quint8 serverAddress, const QModbusDataUnit &unit);
 
 private:
     // Кэш для быстрого поиска: {адрес, тип} -> номер строки
-    QHash<QPair<int, QString>, int> m_addressMap;
+    QHash<QString, int> m_addressMap;
 
     QString getRegisterTypeName(QModbusDataUnit::RegisterType type) const;
 };
