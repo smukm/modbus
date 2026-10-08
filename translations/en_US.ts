@@ -321,88 +321,88 @@
     <message>
         <location filename="../modbusmanager.cpp" line="44"/>
         <source>Failed to initiate connection: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось начать подключение: </translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="88"/>
         <location filename="../modbusmanager.cpp" line="117"/>
         <source>Port is not open!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Порт не открыт!</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="122"/>
         <source>No data to write!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Нет данных для записи!</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="161"/>
         <source>Unsupported function code for reading</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неподдерживаемый код функции для чтения</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="177"/>
         <source>Unsupported function code for writing (supported 0x05, 0x06, 0x0F, 0x10)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="198"/>
         <source>Failed to send request: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось отправить запрос: </translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="211"/>
         <source>ModbusManager: Device disconnected.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ModbusManager: Устройство отключено.</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="216"/>
         <source>ModbusManager: Device successfully connected.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ModbusManager: Устройство успешно подключено.</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="221"/>
         <source>ModbusManager: Attempting to connect...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ModbusManager: Попытка подключения...</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="226"/>
         <source>ModbusManager: Closing connection...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ModbusManager: Закрытие соединения...</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="231"/>
         <source>ModbusManager: Unknown device state.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ModbusManager: Неизвестное состояние устройства.</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="263"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неизвестная ошибка</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="265"/>
         <source>Illegal Function (Function not supported by device)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Illegal Function (Функция не поддерживается устройством)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="267"/>
         <source>Illegal Data Address (Such register/coil address does not exist or is unavailable)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Illegal Data Address (Такого адреса регистра/катушки не существует или он недоступен)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="269"/>
         <source>Illegal Data Value (Value is out of allowed range)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Illegal Data Value (Значение выходит за допустимые пределы)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="271"/>
         <source>Slave Device Failure (Internal device error)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Slave Device Failure (Внутренняя ошибка устройства)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="273"/>
         <source>Slave Device Busy (Device is busy)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Slave Device Busy (Устройство занято)</translation>
     </message>
     <message>
         <location filename="../modbusmanager.cpp" line="277"/>
@@ -440,33 +440,33 @@ Register address: %3</source>
         <location filename="../modbusvalidator.cpp" line="15"/>
         <source>Unsupported function code: 0x%1.
 Supported: 0x01-0x04 (reading) и 0x05, 0x06, 0x0F, 0x10 (writing).</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;Неподдерживаемый код функции: 0x%1.\nПоддерживаются: 0x01-0x04 (чтение) и 0x05, 0x06, 0x0F, 0x10 (запись).</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="25"/>
         <source>Invalid register address (must be in the range 0-65535).</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный адрес регистра (должен быть в диапазоне 0-65535).</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="31"/>
         <source>Invalid register count (must be in the range 1-65535).</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректное количество регистров (должно быть в диапазоне 1-65535).</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="48"/>
         <source>Enter a value to write!</source>
-        <translation type="unfinished"></translation>
+        <translation>Введите значение для записи!</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="55"/>
         <source>Invalid data format.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный формат данных.</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="66"/>
         <source>Invalid value for writing: &apos;%1&apos;
 Expected a number from 0 to 65535 (or 0x0000-0xFFFF).</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректное значение для записи: &apos;%1&apos;\nОжидается число от 0 до 65535 (или 0x0000-0xFFFF).</translation>
     </message>
     <message>
         <location filename="../modbusvalidator.cpp" line="74"/>
@@ -474,135 +474,138 @@ Expected a number from 0 to 65535 (or 0x0000-0xFFFF).</source>
 0 (or 0x00) — for OFF
 65280 (or 0xFF00) — for ON
 You entered: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Для функций 0x05/0x0F (Coils) допустимы только значения:\n
+0 (или 0x00) — для выключения (OFF)\n
+65280 (или 0xFF00) — для включения (ON)\n
+Вы ввели: %1</translation>
     </message>
     <message>
         <location filename="../settingsmanager.cpp" line="75"/>
         <source>SettingsManager: JSON parsing error, using empty object:</source>
-        <translation type="unfinished"></translation>
+        <translation>SettingsManager: Ошибка парсинга JSON, используется пустой объект:</translation>
     </message>
     <message>
         <location filename="../settingsmanager.cpp" line="86"/>
         <source>SettingsManager: Failed to open file for writing:</source>
-        <translation type="unfinished"></translation>
+        <translation>SettingsManager: Не удалось открыть файл для записи:</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="36"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="68"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Стоп</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="70"/>
         <source>Execute</source>
-        <translation type="unfinished"></translation>
+        <translation>Выполнить</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="77"/>
         <source>01 (0x01) - Read Coils</source>
-        <translation type="unfinished"></translation>
+        <translation>01 (0x01) - Чтение дискретных выходов (Read Coils)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="78"/>
         <source>02 (0x02) - Read Discrete Inputs</source>
-        <translation type="unfinished"></translation>
+        <translation>02 (0x02) - Чтение дискретных входов (Read Discrete Inputs)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="79"/>
         <source>03 (0x03) - Read Holding Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>03 (0x03) - Чтение регистров хранения (Read Holding Registers)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="80"/>
         <source>04 (0x04) - Read Input Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>04 (0x04) - Чтение входных регистров (Read Input Registers)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="88"/>
         <source>05 (0x05) - Write Single Coil</source>
-        <translation type="unfinished"></translation>
+        <translation>05 (0x05) - Запись одного дискретного выхода (Write Single Coil)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="89"/>
         <source>06 (0x06) - Write Single Register</source>
-        <translation type="unfinished"></translation>
+        <translation>06 (0x06) - Запись одного регистра (Write Single Register)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="90"/>
         <source>15 (0x0F) - Write Multiple Coils</source>
-        <translation type="unfinished"></translation>
+        <translation>15 (0x0F) - Запись нескольких дискретных выходов (Write Multiple Coils)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="91"/>
         <source>16 (0x10) - Write Multiple Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>16 (0x10) - Запись нескольких регистров (Write Multiple Registers)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="116"/>
         <source>5 bits</source>
-        <translation type="unfinished"></translation>
+        <translation>5 бит</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="117"/>
         <source>6 bits</source>
-        <translation type="unfinished"></translation>
+        <translation>6 бит</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="118"/>
         <source>7 bits</source>
-        <translation type="unfinished"></translation>
+        <translation>7 бит</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="119"/>
         <location filename="../uicontroller.cpp" line="120"/>
         <source>8 bits</source>
-        <translation type="unfinished"></translation>
+        <translation>8 бит</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="124"/>
         <location filename="../uicontroller.cpp" line="129"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Без контроля четности (None)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="125"/>
         <source>Even</source>
-        <translation type="unfinished"></translation>
+        <translation>Четный (Even)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="126"/>
         <source>Odd</source>
-        <translation type="unfinished"></translation>
+        <translation>Нечетный (Odd)</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="127"/>
         <source>Space</source>
-        <translation type="unfinished"></translation>
+        <translation>Space</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="128"/>
         <source>Mark</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="133"/>
         <location filename="../uicontroller.cpp" line="136"/>
         <source>1 stop bit</source>
-        <translation type="unfinished"></translation>
+        <translation>1 стоп-бит</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="134"/>
         <source>1.5 stop bits</source>
-        <translation type="unfinished"></translation>
+        <translation>1.5 стоп-бита</translation>
     </message>
     <message>
         <location filename="../uicontroller.cpp" line="135"/>
         <source>2 stop bits</source>
-        <translation type="unfinished"></translation>
+        <translation>2 стоп-бита</translation>
     </message>
 </context>
 <context>
@@ -610,42 +613,42 @@ You entered: %1</source>
     <message>
         <location filename="../registerdatamodel.cpp" line="6"/>
         <source>Register Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Адрес регистра</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="7"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="8"/>
         <source>Register Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип регистра</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="53"/>
         <source>Holding Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>Holding Registers</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="56"/>
         <source>Input Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>Input Registers</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="59"/>
         <source>Discrete Inputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Discrete Inputs</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="62"/>
         <source>Coils</source>
-        <translation type="unfinished"></translation>
+        <translation>Coils</translation>
     </message>
     <message>
         <location filename="../registerdatamodel.cpp" line="65"/>
         <source>Unknown type</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный тип</translation>
     </message>
 </context>
 </TS>

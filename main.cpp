@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     QTranslator translator;
-    if (translator.load(":/translations/ru_RU.qm")) {
+    if (translator.load(":/translations/en_US.qm")) {
         a.installTranslator(&translator);
     } else {
         qWarning() << "❌ Не удалось загрузить файл перевода ru_RU.qm";

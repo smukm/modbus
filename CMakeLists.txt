@@ -28,7 +28,6 @@ set(PROJECT_SOURCES
 )
 
 set(TS_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/translations/ru_RU.ts
     ${CMAKE_CURRENT_SOURCE_DIR}/translations/en_US.ts
 )
 
