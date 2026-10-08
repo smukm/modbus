@@ -26,7 +26,7 @@ void RegisterDataModel::updateData(quint8 serverAddress, const QModbusDataUnit &
         auto it = m_addressMap.find(key);
 
         if (it != m_addressMap.end()) {
-            // Строка найдена — обновляем только значение (столбец 1)
+            // Строка найдена — обновляем только значение (столбец 2)
             item(it.value(), 2)->setText(valueStr);
         } else {
             // Добавляем новую строку
