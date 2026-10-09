@@ -28,7 +28,7 @@ set(PROJECT_SOURCES
 )
 
 set(TS_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/translations/en_US.ts
+    ${CMAKE_CURRENT_SOURCE_DIR}/translations/ru_RU.ts  # Русский перевод
 )
 
 
@@ -56,6 +56,7 @@ target_link_libraries(serialport PRIVATE
 qt_add_translations(serialport
     TS_FILES ${TS_FILES}
     RESOURCE_PREFIX "/translations"
+    TARGETS serialport
 )
 
 # Стандартные свойства проекта

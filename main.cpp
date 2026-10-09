@@ -11,11 +11,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(APP_NAME);
 
     QApplication a(argc, argv);
+
+    // 1. Получаем системную локаль пользователя (например, "ru_RU", "en_US", "de_DE")
+    QLocale systemLocale = QLocale::system();
+    QString localeName = systemLocale.name();
+
     QTranslator translator;
-    if (translator.load(":/translations/en_US.qm")) {
+    if (translator.load(systemLocale, "", "", ":/translations")) {
         a.installTranslator(&translator);
     } else {
-        qWarning() << "❌ Не удалось загрузить файл перевода ru_RU.qm";
+        qDebug() << "⚠️ Translation for" << localeName << "not found. Using default (source) language.";
+
     }
     MainWindow w;
 

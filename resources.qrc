@@ -3,6 +3,6 @@
         <file>com.ico</file>
     </qresource>
     <qresource prefix="/translations">
-        <file>translations/en_US.ts</file>
+        <file>translations/ru_RU.ts</file>
     </qresource>
 </RCC>
