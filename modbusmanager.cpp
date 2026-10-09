@@ -55,6 +55,11 @@ void ModbusManager::disconnectFromDevice() {
     // Очищаем очередь и сбрасываем флаги при разрыве соединения
     m_requestQueue.clear();
     m_isProcessing = false;
+
+    // При отключении очищаем историю таймаутов и черные списки
+    m_timeoutHistory.clear();
+    m_excludedDevices.clear();
+
     if (m_currentReply) {
         // Отключаем сигнал, чтобы onReplyFinished не вызвался для удаляемого объекта
         disconnect(m_currentReply, &QModbusReply::finished, this, &ModbusManager::onReplyFinished);
@@ -89,6 +94,12 @@ void ModbusManager::sendReadRequest(
         return;
     };
 
+    // Проверка, если устройство в черном списке
+    if (m_excludedDevices.contains(serverAddress)) {
+        emit errorOccurred(tr("Device %1 is excluded from polling due to consecutive timeouts.").arg(serverAddress));
+        return;
+    }
+
     ModbusRequest req;
     req.type = ModbusRequest::Type::Read;
     req.serverAddress = serverAddress;
@@ -120,6 +131,12 @@ void ModbusManager::sendWriteRequest(
 
     if (values.isEmpty()) {
         emit errorOccurred(tr("No data to write!"));
+        return;
+    }
+
+    // Проверка, если устройство в черном списке
+    if (m_excludedDevices.contains(serverAddress)) {
+        emit errorOccurred(tr("Device %1 is excluded. Clear exclusions before writing.").arg(serverAddress));
         return;
     }
 
@@ -290,12 +307,10 @@ void ModbusManager::onReplyFinished() {
     } else if (m_currentReply->error() == QModbusDevice::TimeoutError) {
         // Ошибка таймаута: устройство не ответило в течение заданного времени (по умолчанию 1000 мс)
         emit errorOccurred(
-            tr("Timeout waiting for device response.\n"
-                    "Device address (Slave ID): %1\n"
-                    "Register address: %2\n\n")
-                .arg(m_currentRequest.serverAddress)
-                .arg(m_currentRequest.startAddress)
-            );
+            tr("Timeout waiting for device %1 response.").arg(m_currentRequest.serverAddress)
+        );
+
+        recordTimeout(m_currentRequest.serverAddress);
     } else {
         // Другие ошибки (например, физический обрыв линии, ошибка чтения/записи на уровне ОС)
         emit errorOccurred(
@@ -315,4 +330,47 @@ void ModbusManager::onReplyFinished() {
 
     // Запускаем обработку следующего запроса из очереди
     processNextRequest();
+}
+
+
+void ModbusManager::recordTimeout(quint8 serverAddress) {
+    if (m_excludedDevices.contains(serverAddress)) {
+        return;
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+    m_timeoutHistory[serverAddress].enqueue(now);
+
+    // Очищаем старые записи, которые вышли за пределы временного окна
+    while (!m_timeoutHistory[serverAddress].isEmpty()) {
+        QDateTime oldest = m_timeoutHistory[serverAddress].head();
+        if (oldest.msecsTo(now) > TIMEOUT_WINDOW_MS) {
+            m_timeoutHistory[serverAddress].dequeue();
+        } else {
+            break;
+        }
+    }
+
+    // Проверяем, достигнут ли порог
+    if (m_timeoutHistory[serverAddress].size() >= MAX_TIMEOUTS) {
+        QString msg = tr("ModbusManager: Device %1 excluded from polling due to %2 timeouts within %3 ms")
+                          .arg(serverAddress)
+                          .arg(MAX_TIMEOUTS)
+                          .arg(TIMEOUT_WINDOW_MS);
+        m_excludedDevices.insert(serverAddress);
+        m_timeoutHistory.remove(serverAddress); // Освобождаем память
+
+        // Уведомляем главный поток
+        emit deviceExcludedFromPolling(serverAddress, msg);
+    }
+}
+
+void ModbusManager::resetDeviceExclusion(quint8 serverAddress) {
+    m_excludedDevices.remove(serverAddress);
+    m_timeoutHistory.remove(serverAddress);
+}
+
+void ModbusManager::clearAllExclusions() {
+    m_excludedDevices.clear();
+    m_timeoutHistory.clear();
 }

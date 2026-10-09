@@ -59,9 +59,16 @@ MainWindow::MainWindow(QWidget *parent)
         m_registerModel->updateData(serverAddress, unit);
         m_logManager->addLog(tr("Data received from device #%1").arg(serverAddress));
     });
-    // Новое подключение для отслеживания успешного завершения записи
+    // Подключение для отслеживания успешного завершения записи
     connect(m_modbusManager, &ModbusManager::writeCompleted, this, [this]() {
         m_logManager->addLog(tr("✅ Data write completed successfully."));
+    });
+    // Подключение для активации кнопки Clear errors
+    connect(m_modbusManager, &ModbusManager::deviceExcludedFromPolling, this, [this](quint8 serverAddress, const QString& msg) {
+        m_logManager->addLog(msg, true);
+        ui->btnClearErrors->setEnabled(true);
+
+        m_registerModel->setExcludeDevice(serverAddress);
     });
 
     // Первичная инициализация элементов интерфейса
@@ -79,6 +86,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
     connect(ui->btnClearLogs, &QPushButton::clicked, this, [this]() {
         m_logManager->clear();
+    });
+    connect(ui->btnClearErrors, &QPushButton::clicked, this, [this]() {
+        m_modbusManager->clearAllExclusions();
+        m_registerModel->clearAllExclusions();
+        ui->btnClearErrors->setEnabled(false);
+        m_logManager->addLog(tr("✅ Device exclusions cleared."));
     });
 }
 

@@ -5,105 +5,111 @@
     <name>MainWindow</name>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="346"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="353"/>
         <source>MainWindow</source>
         <translation>Главное окно</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="36"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="347"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="354"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="45"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="348"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="355"/>
         <source>Port settings</source>
         <translation>Настройки порта</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="63"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="349"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="356"/>
         <source>Stop Bits</source>
         <translation>Стоп-биты</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="76"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="350"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="357"/>
         <source>Parity</source>
         <translation>Четность</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="83"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="351"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="358"/>
         <source>Baud Rate</source>
         <translation>Скорость</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="90"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="352"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="359"/>
         <source>Data Bits</source>
         <translation>Биты данных</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="104"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="353"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="360"/>
         <source>Read Registers</source>
         <translation>Чтение регистров</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="122"/>
         <location filename="../mainwindow.ui" line="243"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="354"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="368"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="361"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="375"/>
         <source>Number of Registers</source>
         <translation>Количество регистров</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="136"/>
         <location filename="../mainwindow.ui" line="212"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="356"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="364"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="363"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="371"/>
         <source>Function Code</source>
         <translation>Код функции</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="157"/>
         <location filename="../mainwindow.ui" line="229"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="359"/>
         <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="366"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="373"/>
         <source>Register Address</source>
         <translation>Адрес регистра</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="164"/>
         <location filename="../mainwindow.ui" line="222"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="360"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="365"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="367"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="372"/>
         <source>Device Address SlaveID</source>
         <translation>Адрес устройства SlaveId</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="190"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="362"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="369"/>
         <source>Write to Registers</source>
         <translation>Запись регистров</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="279"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="371"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="378"/>
         <source>comma-separated values (e.g.:  10, 20, 30)</source>
         <translation>значения разделенный запятаей (напр.: 10,20,30)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="293"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="372"/>
+        <location filename="../mainwindow.ui" line="290"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="379"/>
+        <source>Clear errors</source>
+        <translation>Очистить ошибки таймаутов</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="303"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="380"/>
         <source>Device Response</source>
         <translation>Ответ от устройства</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="303"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="373"/>
+        <location filename="../mainwindow.ui" line="313"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="381"/>
         <source>Logs</source>
         <translation>Логи</translation>
     </message>
@@ -112,24 +118,24 @@
         <location filename="../mainwindow.ui" line="150"/>
         <location filename="../mainwindow.ui" line="236"/>
         <location filename="../mainwindow.ui" line="250"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="355"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="358"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="367"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="369"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="362"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="365"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="374"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="376"/>
         <source>0x00</source>
         <translation>0x00</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="143"/>
         <location filename="../mainwindow.ui" line="205"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="357"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="363"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="364"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="370"/>
         <source>0x01</source>
         <translation>0x01</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="313"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="374"/>
+        <location filename="../mainwindow.ui" line="323"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="382"/>
         <source>Очистить логи</source>
         <translation>Очистить логи</translation>
     </message>
@@ -144,174 +150,179 @@
         <translation>⭕ Modbus: Порт отключен.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="55"/>
+        <location filename="../mainwindow.cpp" line="54"/>
         <source>Critical Error</source>
         <translation>Критическая ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="61"/>
+        <location filename="../mainwindow.cpp" line="60"/>
         <source>Data received from device #%1</source>
         <translation>Данные получены от устройства #%1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="65"/>
+        <location filename="../mainwindow.cpp" line="64"/>
         <source>✅ Data write completed successfully.</source>
         <translation>✅ Запись данных успешно завершена.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="101"/>
+        <location filename="../mainwindow.cpp" line="94"/>
+        <source>✅ Device exclusions cleared.</source>
+        <translation>Очищен список исключенных устройств.</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="113"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="102"/>
+        <location filename="../mainwindow.cpp" line="114"/>
         <source>&amp;Open</source>
         <translation>&amp;Открыть</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="105"/>
+        <location filename="../mainwindow.cpp" line="117"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="119"/>
+        <location filename="../mainwindow.cpp" line="131"/>
         <source>No available COM ports</source>
         <translation>Нет доступных COM-портов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="163"/>
+        <location filename="../mainwindow.cpp" line="175"/>
         <source>💾 Port settings saved.</source>
         <translation>💾 Настройки порта сохранены.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="165"/>
+        <location filename="../mainwindow.cpp" line="177"/>
         <source>⚠ Failed to save port settings.</source>
         <translation>⚠ Не удалось сохранить настройки порта.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="229"/>
+        <location filename="../mainwindow.cpp" line="241"/>
         <source>Attempting to connect to %1</source>
         <translation>Попытка подключения к %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="248"/>
-        <location filename="../mainwindow.cpp" line="269"/>
-        <location filename="../mainwindow.cpp" line="291"/>
+        <location filename="../mainwindow.cpp" line="260"/>
+        <location filename="../mainwindow.cpp" line="281"/>
+        <location filename="../mainwindow.cpp" line="303"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="248"/>
-        <location filename="../mainwindow.cpp" line="269"/>
-        <location filename="../mainwindow.cpp" line="291"/>
+        <location filename="../mainwindow.cpp" line="260"/>
+        <location filename="../mainwindow.cpp" line="281"/>
+        <location filename="../mainwindow.cpp" line="303"/>
         <source>Open the port first!</source>
         <translation>Сначала откройте порт!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="261"/>
+        <location filename="../mainwindow.cpp" line="273"/>
         <source>Periodic polling started</source>
         <translation>Периодический опрос запущен</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="273"/>
+        <location filename="../mainwindow.cpp" line="285"/>
         <source>▶ Executing single write command...</source>
         <translation>▶ Выполнение одиночной команды записи...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="180"/>
         <location filename="../mainwindow.ui" line="266"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="361"/>
-        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="370"/>
-        <location filename="../mainwindow.cpp" line="280"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="368"/>
+        <location filename="../build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/serialport_autogen/include/ui_mainwindow.h" line="377"/>
+        <location filename="../mainwindow.cpp" line="292"/>
         <source>Execute</source>
         <translation>Выполнить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="282"/>
+        <location filename="../mainwindow.cpp" line="294"/>
         <source>Periodic polling stopped</source>
         <translation>Периодический опрос остановлен</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="302"/>
-        <location filename="../mainwindow.cpp" line="309"/>
+        <location filename="../mainwindow.cpp" line="314"/>
         <location filename="../mainwindow.cpp" line="321"/>
-        <location filename="../mainwindow.cpp" line="326"/>
-        <location filename="../mainwindow.cpp" line="377"/>
-        <location filename="../mainwindow.cpp" line="381"/>
-        <location filename="../mainwindow.cpp" line="385"/>
-        <location filename="../mainwindow.cpp" line="400"/>
+        <location filename="../mainwindow.cpp" line="333"/>
+        <location filename="../mainwindow.cpp" line="338"/>
+        <location filename="../mainwindow.cpp" line="389"/>
+        <location filename="../mainwindow.cpp" line="393"/>
+        <location filename="../mainwindow.cpp" line="397"/>
+        <location filename="../mainwindow.cpp" line="412"/>
         <source>Input Error</source>
         <translation>Ошибка ввода</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="302"/>
+        <location filename="../mainwindow.cpp" line="314"/>
         <source>Enter the device address!</source>
         <translation>Введите адрес устройства!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="309"/>
+        <location filename="../mainwindow.cpp" line="321"/>
         <source>Invalid address list format!</source>
         <translation>Некорректный формат списка адресов!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="321"/>
-        <location filename="../mainwindow.cpp" line="381"/>
+        <location filename="../mainwindow.cpp" line="333"/>
+        <location filename="../mainwindow.cpp" line="393"/>
         <source>Invalid register address (0-65535)!</source>
         <translation>Некорректный адрес регистра (0-65535)!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="326"/>
-        <location filename="../mainwindow.cpp" line="385"/>
+        <location filename="../mainwindow.cpp" line="338"/>
+        <location filename="../mainwindow.cpp" line="397"/>
         <source>Invalid number of registers (1-65535)!</source>
         <translation>Некорректное количество регистров (1-65535)!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="339"/>
+        <location filename="../mainwindow.cpp" line="351"/>
         <source>⚠ Skipping invalid device address: &apos;%1&apos; (допустимо 1-247)</source>
         <translation>⚠ Пропуск некорректного адреса устройства: &amp;apos;%1&amp;apos; (допустимо 1-247)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="345"/>
+        <location filename="../mainwindow.cpp" line="357"/>
         <source>⚠ Validation error for address %1: %2</source>
         <translation>⚠ Ошибка валидации для адреса %1: %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="359"/>
+        <location filename="../mainwindow.cpp" line="371"/>
         <source>📡 Requests sent: %1. Waiting for responses...</source>
         <translation>📡 Отправлено запросов: %1. Ожидание ответов...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="362"/>
+        <location filename="../mainwindow.cpp" line="374"/>
         <source>❌ Failed to generate any valid request.</source>
         <translation>❌ Не удалось сформировать ни одного корректного запроса.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="377"/>
+        <location filename="../mainwindow.cpp" line="389"/>
         <source>Invalid device address (0-255)!</source>
         <translation>Некорректный адрес устройства (0-255)!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
+        <location filename="../mainwindow.cpp" line="400"/>
         <source>Write: %1 | Addr: %2, Reg: %3, Qty: %4</source>
         <translation>Запись: %1 | Addr: %2, Reg: %3, Qty: %4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="393"/>
+        <location filename="../mainwindow.cpp" line="405"/>
         <source>Validation Error</source>
         <translation>Ошибка валидации</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="405"/>
+        <location filename="../mainwindow.cpp" line="417"/>
         <source>Number of values (%1) does not match the specified (%2). will be written %1.</source>
         <translation>Кол-во значений (%1) не совпадает с указанным (%2). Будет записано %1.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="409"/>
+        <location filename="../mainwindow.cpp" line="421"/>
         <source>Data to write: %1</source>
         <translation>Данные для записи: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="425"/>
+        <location filename="../mainwindow.cpp" line="437"/>
         <source>Polling stopped: port disconnected</source>
         <translation>Опрос остановлен: порт отключен</translation>
     </message>
@@ -324,88 +335,98 @@
         <translation>Не удалось начать подключение: </translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="88"/>
-        <location filename="../modbusmanager.cpp" line="117"/>
+        <location filename="../modbusmanager.cpp" line="93"/>
+        <location filename="../modbusmanager.cpp" line="128"/>
         <source>Port is not open!</source>
         <translation>Порт не открыт!</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="122"/>
+        <location filename="../modbusmanager.cpp" line="99"/>
+        <source>Device %1 is excluded from polling due to consecutive timeouts.</source>
+        <translation>Устройство %1 исключено из опроса из-за множества таймаутов.</translation>
+    </message>
+    <message>
+        <location filename="../modbusmanager.cpp" line="133"/>
         <source>No data to write!</source>
         <translation>Нет данных для записи!</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="161"/>
+        <location filename="../modbusmanager.cpp" line="139"/>
+        <source>Device %1 is excluded. Clear exclusions before writing.</source>
+        <translation>Устройство %1 исключено. Очистите список исключенных устройств.</translation>
+    </message>
+    <message>
+        <location filename="../modbusmanager.cpp" line="178"/>
         <source>Unsupported function code for reading</source>
         <translation>Неподдерживаемый код функции для чтения</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="177"/>
+        <location filename="../modbusmanager.cpp" line="194"/>
         <source>Unsupported function code for writing (supported 0x05, 0x06, 0x0F, 0x10)</source>
         <translation>Неподдерживаемый код функции для записи (поддерживаются 0x05, 0x06, 0x0F, 0x10)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="198"/>
+        <location filename="../modbusmanager.cpp" line="215"/>
         <source>Failed to send request: </source>
         <translation>Не удалось отправить запрос: </translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="211"/>
+        <location filename="../modbusmanager.cpp" line="228"/>
         <source>ModbusManager: Device disconnected.</source>
         <translation>ModbusManager: Устройство отключено.</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="216"/>
+        <location filename="../modbusmanager.cpp" line="233"/>
         <source>ModbusManager: Device successfully connected.</source>
         <translation>ModbusManager: Устройство успешно подключено.</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="221"/>
+        <location filename="../modbusmanager.cpp" line="238"/>
         <source>ModbusManager: Attempting to connect...</source>
         <translation>ModbusManager: Попытка подключения...</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="226"/>
+        <location filename="../modbusmanager.cpp" line="243"/>
         <source>ModbusManager: Closing connection...</source>
         <translation>ModbusManager: Закрытие соединения...</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="231"/>
+        <location filename="../modbusmanager.cpp" line="248"/>
         <source>ModbusManager: Unknown device state.</source>
         <translation>ModbusManager: Неизвестное состояние устройства.</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="263"/>
+        <location filename="../modbusmanager.cpp" line="280"/>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="265"/>
+        <location filename="../modbusmanager.cpp" line="282"/>
         <source>Illegal Function (Function not supported by device)</source>
         <translation>Illegal Function (Функция не поддерживается устройством)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="267"/>
+        <location filename="../modbusmanager.cpp" line="284"/>
         <source>Illegal Data Address (Such register/coil address does not exist or is unavailable)</source>
         <translation>Illegal Data Address (Такого адреса регистра/катушки не существует или он недоступен)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="269"/>
+        <location filename="../modbusmanager.cpp" line="286"/>
         <source>Illegal Data Value (Value is out of allowed range)</source>
         <translation>Illegal Data Value (Значение выходит за допустимые пределы)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="271"/>
+        <location filename="../modbusmanager.cpp" line="288"/>
         <source>Slave Device Failure (Internal device error)</source>
         <translation>Slave Device Failure (Внутренняя ошибка устройства)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="273"/>
+        <location filename="../modbusmanager.cpp" line="290"/>
         <source>Slave Device Busy (Device is busy)</source>
         <translation>Slave Device Busy (Устройство занято)</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="277"/>
+        <location filename="../modbusmanager.cpp" line="294"/>
         <source>Device rejected the request (Modbus Exception).
 Error code: %1
 Description: %2
@@ -425,18 +446,28 @@ What to check:
 2. Не перепутали ли вы функцию (0x05 для катушек, 0x06 для числовых регистров)?</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="293"/>
+        <location filename="../modbusmanager.cpp" line="310"/>
+        <source>Timeout waiting for device %1 response.</source>
+        <translatorcomment>Таймаут ожидания для устройства %1</translatorcomment>
+        <translation>Таймаут ожидания ответа от устройства %1.</translation>
+    </message>
+    <message>
+        <location filename="../modbusmanager.cpp" line="356"/>
+        <source>ModbusManager: Device %1 excluded from polling due to %2 timeouts within %3 ms</source>
+        <translation>ModbusManager: Устройство %1 исключено из опроса из-за %2 таймаутов в течение %3 ms</translation>
+    </message>
+    <message>
         <source>Timeout waiting for device response.
 Device address (Slave ID): %1
 Register address: %2
 
 </source>
-        <translation>Таймаут ожидания ответа от устройства.\n
+        <translation type="vanished">Таймаут ожидания ответа от устройства.\n
 Адрес устройства (Slave ID): %1\n
 Адрес регистра: %2\n</translation>
     </message>
     <message>
-        <location filename="../modbusmanager.cpp" line="302"/>
+        <location filename="../modbusmanager.cpp" line="317"/>
         <source>Modbus response error: %1
 Device address (Slave ID): %2
 Register address: %3</source>
@@ -620,80 +651,48 @@ You entered: %1</source>
 <context>
     <name>RegisterDataModel</name>
     <message>
-        <location filename="../registerdatamodel.cpp" line="6"/>
+        <location filename="../registerdatamodel.cpp" line="12"/>
         <source>SlaveId</source>
         <translatorcomment>SlaveId</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="7"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="7"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="7"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="6"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="6"/>
+        <location filename="../registerdatamodel.cpp" line="13"/>
         <source>Register Address</source>
         <translation>Адрес регистра</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="8"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="8"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="8"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="7"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="7"/>
+        <location filename="../registerdatamodel.cpp" line="14"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="9"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="9"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="9"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="8"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="8"/>
+        <location filename="../registerdatamodel.cpp" line="15"/>
         <source>Register Type</source>
         <translation>Тип регистра</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="57"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="63"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="63"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="53"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="53"/>
+        <location filename="../registerdatamodel.cpp" line="204"/>
         <source>Holding Registers</source>
         <translation>Holding Registers</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="60"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="66"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="66"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="56"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="56"/>
+        <location filename="../registerdatamodel.cpp" line="207"/>
         <source>Input Registers</source>
         <translation>Input Registers</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="63"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="69"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="69"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="59"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="59"/>
+        <location filename="../registerdatamodel.cpp" line="210"/>
         <source>Discrete Inputs</source>
         <translation>Discrete Inputs</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="66"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="72"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="72"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="62"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="62"/>
+        <location filename="../registerdatamodel.cpp" line="213"/>
         <source>Coils</source>
         <translation>Coils</translation>
     </message>
     <message>
-        <location filename="../registerdatamodel.cpp" line="69"/>
-        <location filename="../registerdatamodel_BACKUP_1393.cpp" line="75"/>
-        <location filename="../registerdatamodel_BACKUP_318.cpp" line="75"/>
-        <location filename="../registerdatamodel_LOCAL_1393.cpp" line="65"/>
-        <location filename="../registerdatamodel_LOCAL_318.cpp" line="65"/>
+        <location filename="../registerdatamodel.cpp" line="216"/>
         <source>Unknown type</source>
         <translation>Неизвестный тип</translation>
     </message>

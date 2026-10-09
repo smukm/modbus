@@ -281,6 +281,16 @@
             </widget>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btnClearErrors">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Clear errors</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
