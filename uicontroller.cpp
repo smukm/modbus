@@ -9,6 +9,10 @@ UiController::UiController(Ui::MainWindow *ui) : m_ui(ui) {}
 void UiController::setConnectedState() {
     m_ui->btnApply->setText("Закрыть");
 
+    m_ui->cbConnectionType->setEnabled(false);
+    m_ui->leIpAddress->setEnabled(false);
+    m_ui->sbPort->setEnabled(false);
+
     // Блокируем настройки порта
     m_ui->cbPorts->setEnabled(false);
     m_ui->cbBaudRate->setEnabled(false);
@@ -34,6 +38,10 @@ void UiController::setConnectedState() {
 void UiController::setDisconnectedState() {
     m_ui->btnApply->setEnabled(true);
     m_ui->btnApply->setText(QObject::tr("Connect"));
+
+    m_ui->cbConnectionType->setEnabled(true);
+    m_ui->leIpAddress->setEnabled(true);
+    m_ui->sbPort->setEnabled(true);
 
     // Разблокируем настройки порта
     m_ui->cbPorts->setEnabled(true);
@@ -134,4 +142,35 @@ void UiController::initializePortSettingsCombo() {
      m_ui->cbStopBits->addItem(QObject::tr("1.5 stop bits"), QSerialPort::OneAndHalfStop);
      m_ui->cbStopBits->addItem(QObject::tr("2 stop bits"), QSerialPort::TwoStop);
      m_ui->cbStopBits->setCurrentText(QObject::tr("1 stop bit"));
+}
+
+void UiController::initializeConnectionsCombo() {
+    m_ui->cbConnectionType->clear();
+    m_ui->cbConnectionType->addItem("Serial (RTU)", static_cast<int>(ModbusConnectionSettings::Serial));
+    m_ui->cbConnectionType->addItem("TCP",         static_cast<int>(ModbusConnectionSettings::Tcp));
+}
+
+void UiController::updateConnectionUiVisibility(ModbusConnectionSettings::ConnectionType type) {
+    // Показываем/скрываем элементы UI в зависимости от типа подключения
+    bool isSerial = (type == ModbusConnectionSettings::Serial);
+
+    if (m_ui->cbPorts) m_ui->cbPorts->setVisible(isSerial);
+    if (m_ui->cbBaudRate) m_ui->cbBaudRate->setVisible(isSerial);
+    if (m_ui->lblBaudRate) m_ui->lblBaudRate->setVisible(isSerial);
+    if (m_ui->cbParity) m_ui->cbParity->setVisible(isSerial);
+    if (m_ui->lblParity) m_ui->lblParity->setVisible(isSerial);
+    if (m_ui->cbDataBits) m_ui->cbDataBits->setVisible(isSerial);
+    if (m_ui->lblDataBits) m_ui->lblDataBits->setVisible(isSerial);
+    if (m_ui->cbStopBits) m_ui->cbStopBits->setVisible(isSerial);
+    if (m_ui->lblStopBits) m_ui->lblStopBits->setVisible(isSerial);
+
+    if (m_ui->leIpAddress) m_ui->leIpAddress->setVisible(!isSerial);
+    if (m_ui->lblIpAddress) m_ui->lblIpAddress->setVisible(!isSerial);
+    if (m_ui->sbPort) m_ui->sbPort->setVisible(!isSerial);
+    if (m_ui->lblPort) m_ui->lblPort->setVisible(!isSerial);
+    if (isSerial) {
+        m_ui->gbPortSettings->setTitle(QObject::tr("Port settings"));
+    } else {
+        m_ui->gbPortSettings->setTitle(QObject::tr("Connection settings"));
+    }
 }

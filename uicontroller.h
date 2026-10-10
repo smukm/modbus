@@ -1,6 +1,7 @@
 #ifndef UICONTROLLER_H
 #define UICONTROLLER_H
 #include "./ui_mainwindow.h"
+#include "abstractmodbusmanager.h"
 
 class UiController
 {
@@ -18,6 +19,9 @@ public:
     void initializeCommandWidgets();
 
     void initializePortSettingsCombo();
+    void initializeConnectionsCombo();
+
+    void updateConnectionUiVisibility(ModbusConnectionSettings::ConnectionType type);
 
 private:
     Ui::MainWindow *m_ui;

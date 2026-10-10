@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "modbusrtumanager.h"
+#include "modbustcpmanager.h"
 #include "modbusvalidator.h"
 #include "settingsmanager.h"
 #include <QMenuBar>
@@ -11,12 +13,12 @@
 
 /**
  * @brief Конструктор главного окна приложения.
- * Инициализирует UI, создает экземпляр ModbusManager и настраивает все сигналы и слоты.
+ * Инициализирует UI, создает экземпляры менеджеров и настраивает все сигналы и слоты.
  */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_modbusManager(new ModbusManager(this))
+    , m_modbusManager(nullptr)
     , m_pollingTimer(new QTimer(this))
     , m_logManager(new LogManager(this))
     , m_registerModel(new RegisterDataModel(this))
@@ -35,44 +37,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_pollingTimer->setInterval(2000); // Интервал опроса в миллисекундах (2 секунды)
     connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
 
-    connect(m_modbusManager, &ModbusManager::connected, this, [this]() {
-        m_logManager->addLog(tr("✅ Modbus: Port connected successfully."));
-        m_uiController->setConnectedState();
-    });
-
-    connect(m_modbusManager, &ModbusManager::disconnected, this, [this]() {
-        m_logManager->addLog(tr("⭕ Modbus: Port disconnected."));
-        m_uiController->setDisconnectedState();
-    });
-
-    connect(m_modbusManager, &ModbusManager::errorOccurred, this, [this](const QString &error) {
-        m_logManager->addLog(error, true);
-    });
-
-    connect(m_modbusManager, &ModbusManager::errorCriticalOccurred, this, [this](const QString &error) {
-        stopPolling();
-        QMessageBox::critical(this, tr("Critical Error"), error);
-    });
-
-    // Подключение сигнала получения данных к специализированному слоту обработки
-    connect(m_modbusManager, &ModbusManager::dataReceived, this, [this](quint8 serverAddress, const QModbusDataUnit &unit) {
-        m_registerModel->updateData(serverAddress, unit);
-        m_logManager->addLog(tr("Data received from device #%1").arg(serverAddress));
-    });
-    // Подключение для отслеживания успешного завершения записи
-    connect(m_modbusManager, &ModbusManager::writeCompleted, this, [this]() {
-        m_logManager->addLog(tr("✅ Data write completed successfully."));
-    });
-    // Подключение для активации кнопки Clear errors
-    connect(m_modbusManager, &ModbusManager::deviceExcludedFromPolling, this, [this](quint8 serverAddress, const QString& msg) {
-        m_logManager->addLog(msg, true);
-        ui->btnClearErrors->setEnabled(true);
-
-        m_registerModel->setExcludeDevice(serverAddress);
-    });
+    // 1. Загружаем сохраненные настройки, чтобы создать правильный менеджер сразу
+    ModbusConnectionSettings savedSettings = SettingsManager::loadPortSettings();
+    ensureCorrectManager(savedSettings.type);
 
     // Первичная инициализация элементов интерфейса
     createMenu();
+    m_uiController->initializeConnectionsCombo();
     m_uiController->initializePortSettingsCombo();
     loadPortSettings();
     m_uiController->initializeCommandWidgets();
@@ -80,21 +51,48 @@ MainWindow::MainWindow(QWidget *parent)
     loadLastCommandParams();
     setPorts();
 
+    // Обновляем видимость элементов UI в зависимости от типа соединения
+    m_uiController->updateConnectionUiVisibility(savedSettings.type);
+
+
     // Подключение кнопок интерфейса к слотам
-    connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onOpenPort);
-    connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onStartReading);
-    connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
-    connect(ui->btnClearLogs, &QPushButton::clicked, this, [this]() {
-        m_logManager->clear();
-    });
-    connect(ui->btnClearErrors, &QPushButton::clicked, this, [this]() {
-        m_modbusManager->clearAllExclusions();
-        m_registerModel->clearAllExclusions();
-        ui->btnClearErrors->setEnabled(false);
-        m_logManager->addLog(tr("✅ Device exclusions cleared."));
-    });
+     connect(ui->btnApply, &QPushButton::clicked, this, &MainWindow::onOpenPort);
+     connect(ui->btnSendData, &QPushButton::clicked, this, &MainWindow::onStartReading);
+     connect(ui->btnExecuteOnce, &QPushButton::clicked, this, &MainWindow::onStartWriting);
+     connect(ui->btnClearLogs, &QPushButton::clicked, this, [this]() {
+         m_logManager->clear();
+     });
+     connect(ui->btnClearErrors, &QPushButton::clicked, this, [this]() {
+         if (m_modbusManager) { // Дополнительная защита от nullptr
+             m_modbusManager->clearAllExclusions();
+         }
+         m_registerModel->clearAllExclusions();
+         ui->btnClearErrors->setEnabled(false);
+         m_logManager->addLog(tr("✅ Device exclusions cleared."));
+     });
+     connect(ui->cbConnectionType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() {
+         // Обновляем видимость полей ввода
+         ModbusConnectionSettings::ConnectionType type = getCurrentConnectionType();
+         m_uiController->updateConnectionUiVisibility(type);
+         bool isSerial = (type == ModbusConnectionSettings::Serial);
+         // Обновляем список портов только если выбран Serial
+         if (isSerial) {
+             setPorts();
+         }
+
+         // Если порт был открыт, принудительно закрываем его,
+         // так как пользователь сменил тип транспорта (Serial <-> TCP)
+         if (m_modbusManager && m_modbusManager->isConnected()) {
+             m_modbusManager->disconnectFromDevice();
+             m_logManager->addLog(tr("⭕ Connection closed due to change of connection type."));
+         }
+     });
 }
 
+/**
+ * @brief Деструктор главного окна.
+ * Гарантирует корректное завершение работы таймеров и соединений перед удалением объекта.
+ */
 MainWindow::~MainWindow()
 {
     if (m_pollingTimer) {
@@ -102,8 +100,94 @@ MainWindow::~MainWindow()
     }
     if (m_modbusManager) {
         m_modbusManager->disconnectFromDevice();
+        m_modbusManager->deleteLater();
     }
     delete ui;
+}
+
+/**
+ * @brief Считывает текущий выбранный тип соединения из комбобокса.
+ * @return Тип соединения (Serial по умолчанию, если элемент UI недоступен).
+ */
+ModbusConnectionSettings::ConnectionType MainWindow::getCurrentConnectionType() const {
+     if (ui->cbConnectionType) {
+         return static_cast<ModbusConnectionSettings::ConnectionType>(ui->cbConnectionType->currentData().toInt());
+    }
+    return ModbusConnectionSettings::Serial;
+}
+
+/**
+ * @brief Проверяет и при необходимости пересоздает менеджер Modbus.
+ * @param type Требуемый тип соединения.
+ */
+void MainWindow::ensureCorrectManager(ModbusConnectionSettings::ConnectionType type) {
+    bool needRecreate = false;
+
+    if (!m_modbusManager) {
+        needRecreate = true;
+    } else if (type == ModbusConnectionSettings::Serial && dynamic_cast<ModbusRtuManager*>(m_modbusManager) == nullptr) {
+        needRecreate = true;
+    } else if (type == ModbusConnectionSettings::Tcp && dynamic_cast<ModbusTcpManager*>(m_modbusManager) == nullptr) {
+        needRecreate = true;
+    }
+
+    if (needRecreate) {
+        // Безопасное удаление старого менеджера
+        if (m_modbusManager) {
+            m_modbusManager->disconnectFromDevice();
+            m_modbusManager->deleteLater();
+        }
+
+        if (type == ModbusConnectionSettings::Serial) {
+            m_modbusManager = new ModbusRtuManager(this);
+        } else {
+            m_modbusManager = new ModbusTcpManager(this);
+        }
+
+        // Подключаем сигналы
+        setupModbusConnections();
+    }
+}
+
+/**
+ * @brief Подключает сигналы менеджера Modbus к лямбда-выражениям главного окна.
+ */
+void MainWindow::setupModbusConnections() {
+    if (!m_modbusManager) return;
+
+    connect(m_modbusManager, &AbstractModbusManager::connected, this, [this]() {
+        m_logManager->addLog(tr("✅ Modbus: Connected successfully."));
+        m_uiController->setConnectedState();
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::disconnected, this, [this]() {
+        m_logManager->addLog(tr("⭕ Modbus: Disconnected."));
+        m_uiController->setDisconnectedState();
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::errorOccurred, this, [this](const QString &error) {
+        m_logManager->addLog(error, true);
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::errorCriticalOccurred, this, [this](const QString &error) {
+        stopPolling();
+        QMessageBox::critical(this, tr("Critical Error"), error);
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::dataReceived, this, [this](quint8 serverAddress, const QModbusDataUnit &unit) {
+        m_registerModel->updateData(serverAddress, unit);
+        m_logManager->addLog(tr("Data received from device #%1").arg(serverAddress));
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::writeCompleted, this, [this]() {
+        m_logManager->addLog(tr("✅ Data write completed successfully."));
+    });
+
+    connect(m_modbusManager, &AbstractModbusManager::deviceExcludedFromPolling, this, [this](quint8 serverAddress, const QString& msg) {
+        m_logManager->addLog(msg, true);
+        ui->btnClearErrors->setEnabled(true);
+        m_registerModel->setExcludeDevice(serverAddress);
+    });
 }
 
 /**
@@ -111,9 +195,6 @@ MainWindow::~MainWindow()
  */
 void MainWindow::createMenu() {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    QAction *openAction = fileMenu->addAction(tr("&Open"));
-    openAction->setShortcut(QKeySequence::Open);
-    fileMenu->addSeparator();
     QAction *exitAction = fileMenu->addAction(tr("&Exit"));
     connect(exitAction, &QAction::triggered, this, &QWidget::close);
 }
@@ -150,14 +231,19 @@ void MainWindow::setPorts() {
  */
 void MainWindow::loadPortSettings() {
     ModbusConnectionSettings savedSettings = SettingsManager::loadPortSettings();
+
+    // Обновляем видимость UI перед заполнением
+     if (ui->cbConnectionType) {
+         int typeIdx = ui->cbConnectionType->findData(static_cast<int>(savedSettings.type));
+         if (typeIdx != -1) ui->cbConnectionType->setCurrentIndex(typeIdx);
+     }
+
     if (!savedSettings.portName.isEmpty()) {
         int portIndex = ui->cbPorts->findData(savedSettings.portName);
-        if (portIndex != -1) {
-            ui->cbPorts->setCurrentIndex(portIndex);
-        }
+        if (portIndex != -1) ui->cbPorts->setCurrentIndex(portIndex);
     }
-    // Устанавливаем остальные параметры по их числовым значениям (data)
     auto setComboByData = [](QComboBox *cb, int value) {
+        if (!cb) return;
         int idx = cb->findData(value);
         if (idx != -1) cb->setCurrentIndex(idx);
     };
@@ -165,10 +251,13 @@ void MainWindow::loadPortSettings() {
     setComboByData(ui->cbParity,   savedSettings.parity);
     setComboByData(ui->cbDataBits, savedSettings.dataBits);
     setComboByData(ui->cbStopBits, savedSettings.stopBits);
+    if (ui->leIpAddress) ui->leIpAddress->setText(savedSettings.ipAddress);
+    if (ui->sbPort) ui->sbPort->setValue(savedSettings.port);
 }
 
 /**
- * @brief Сохраняет настройки в json
+ * @brief Сохраняет текущие настройки подключения в JSON-файл.
+ * @param settings Структура настроек для сохранения.
  */
 void MainWindow::savePortSettings(const ModbusConnectionSettings& settings) {
     if (SettingsManager::savePortSettings(settings)) {
@@ -179,7 +268,7 @@ void MainWindow::savePortSettings(const ModbusConnectionSettings& settings) {
 }
 
 /**
- * @brief Загружает последние параметры чтения/записи в UI
+ * @brief Загружает последние параметры команд чтения/записи в поля UI.
  */
 void MainWindow::loadLastCommandParams() {
     ModbusLastParams params = SettingsManager::loadLastParams();
@@ -204,7 +293,7 @@ void MainWindow::loadLastCommandParams() {
 }
 
 /**
- * @brief Считывает текущие значения из UI и сохраняет их как "последние использованные"
+ * @brief Считывает текущие значения из UI и сохраняет их как "последние использованные".
  */
 void MainWindow::saveLastCommandParams() {
     ModbusLastParams params;
@@ -227,33 +316,49 @@ void MainWindow::saveLastCommandParams() {
 
 /**
  * @brief Слот-обработчик нажатия кнопки "Открыть/Закрыть" (btnApply).
- * Реализует логику переключения (toggle): если порт открыт — закрываем его,
- * если закрыт — считываем настройки из UI и открываем.
+ * Реализует логику переключения (toggle).
  */
 void MainWindow::onOpenPort() {
-    if (!m_modbusManager) {
-        return;
-     }
+    if (!m_modbusManager) return;
 
     if (m_modbusManager->isConnected()) {
         m_modbusManager->disconnectFromDevice();
-    } else {
-        m_logManager->addLog(tr("Attempting to connect to %1").arg(ui->cbPorts->currentData().toString()));
-        ModbusConnectionSettings settings = {
-            .portName = ui->cbPorts->currentData().toString(),
-            .baudRate = ui->cbBaudRate->currentData().toInt(),
-            .parity = ui->cbParity->currentData().toInt(),
-            .dataBits = ui->cbDataBits->currentData().toInt(),
-            .stopBits = ui->cbStopBits->currentData().toInt()
-        };
-
-        savePortSettings(settings);
-
-        m_modbusManager->connectToDevice(settings);
+        return;
     }
+
+    // Определяем желаемый тип подключения из UI
+    ModbusConnectionSettings::ConnectionType desiredType = getCurrentConnectionType();
+
+    // Гарантируем, что у нас правильный экземпляр менеджера
+    ensureCorrectManager(desiredType);
+
+    // Собираем настройки
+    ModbusConnectionSettings settings;
+    settings.type = desiredType;
+
+    if (desiredType == ModbusConnectionSettings::Serial) {
+        settings.portName = ui->cbPorts->currentData().toString();
+        settings.baudRate = ui->cbBaudRate->currentData().toInt();
+        settings.parity = ui->cbParity->currentData().toInt();
+        settings.dataBits = ui->cbDataBits->currentData().toInt();
+        settings.stopBits = ui->cbStopBits->currentData().toInt();
+
+        m_logManager->addLog(tr("Attempting to connect to Serial port: %1").arg(settings.portName));
+    } else {
+        settings.ipAddress = ui->leIpAddress ? ui->leIpAddress->text().trimmed() : "127.0.0.1";
+        settings.port = ui->sbPort ? static_cast<qint16>(ui->sbPort->value()) : 502;
+
+        m_logManager->addLog(tr("Attempting to connect to TCP: %1:%2").arg(settings.ipAddress).arg(settings.port));
+    }
+
+    savePortSettings(settings);
+    m_modbusManager->connectToDevice(settings);
 }
 
-
+/**
+ * @brief Слот обработки кнопки "Начать чтение".
+ * Работает как переключатель: запускает периодический опрос или останавливает его.
+ */
 void MainWindow::onStartReading() {
 
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
@@ -276,6 +381,10 @@ void MainWindow::onStartReading() {
     sendReadData();
 }
 
+/**
+ * @brief Слот обработки кнопки "Выполнить запись".
+ * Отправляет одиночный запрос на запись без активации периодического опроса.
+ */
 void MainWindow::onStartWriting() {
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
         QMessageBox::warning(this, tr("Error"), tr("Open the port first!"));
@@ -286,6 +395,9 @@ void MainWindow::onStartWriting() {
     sendWriteData();
 }
 
+/**
+ * @brief Останавливает таймер опроса и возвращает UI в состояние покоя.
+ */
 void MainWindow::stopPolling() {
     if (m_pollingTimer->isActive()) {
         m_pollingTimer->stop();
@@ -296,7 +408,8 @@ void MainWindow::stopPolling() {
 }
 
 /**
- * @brief Формирует и отправляет Modbus-запрос на основе данных из полей ввода.
+ * @brief Формирует и отправляет Modbus-запрос на чтение на основе данных из полей ввода.
+ * Поддерживает множественные адреса устройств через запятую.
  */
 void MainWindow::sendReadData() {
     if (!m_modbusManager || !m_modbusManager->isConnected()) {
@@ -376,6 +489,9 @@ void MainWindow::sendReadData() {
     }
 }
 
+/**
+ * @brief Формирует и отправляет Modbus-запрос на запись на основе данных из полей ввода.
+ */
 void MainWindow::sendWriteData() {
     if (!m_modbusManager || !m_modbusManager->isConnected()) return;
 
@@ -385,8 +501,8 @@ void MainWindow::sendWriteData() {
     quint16 startAddress = ui->leWriteRegisterAddress->text().trimmed().toInt(&okAddr, 0);
     quint16 count = ui->leWriteRegistersQty->text().trimmed().toInt(&okQty, 0);
 
-    if (!okDev || deviceAddr > 255) {
-        QMessageBox::warning(this, tr("Input Error"), tr("Invalid device address (0-255)!"));
+    if (!okDev || deviceAddr == 0 || deviceAddr > 247) {
+        QMessageBox::warning(this, tr("Input Error"), tr("Invalid device address (1-247)!"));
         return;
     }
     if (!okAddr || startAddress > 65535) {

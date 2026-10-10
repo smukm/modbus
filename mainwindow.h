@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "modbusmanager.h"
+#include "abstractmodbusmanager.h"
 #include "logmanager.h"
 #include "registerdatamodel.h"
 #include "uicontroller.h"
@@ -24,12 +24,16 @@ public:
     ~MainWindow() override;
 
 private:
+    void setupModbusConnections();
+    void ensureCorrectManager(ModbusConnectionSettings::ConnectionType type);
+    ModbusConnectionSettings::ConnectionType getCurrentConnectionType() const;
+
     Ui::MainWindow *ui;
-    ModbusManager* m_modbusManager;
-    LogManager* m_logManager;
-    RegisterDataModel* m_registerModel;
-    UiController* m_uiController; // Helper
-    QTimer *m_pollingTimer;
+    AbstractModbusManager* m_modbusManager; // Базовый указатель на активный менеджер Modbus (RTU или TCP).
+    LogManager* m_logManager; // Менеджер для ведения и отображения журнала событий.
+    RegisterDataModel* m_registerModel; // Модель данных для отображения полученных регистров в TableView.
+    UiController* m_uiController; // Вспомогательный контроллер для управления состоянием элементов UI.
+    QTimer *m_pollingTimer; // Таймер для автоматического периодического опроса устройств.
 
     void setPorts();
     void fillSettings();

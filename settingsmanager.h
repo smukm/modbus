@@ -1,6 +1,6 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
-#include "modbusmanager.h"
+#include "abstractmodbusmanager.h"
 
 struct ModbusLastParams {
     // Параметры чтения

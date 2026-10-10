@@ -18,7 +18,7 @@ set(PROJECT_SOURCES
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    modbusmanager.h modbusmanager.cpp
+
     logmanager.h logmanager.cpp
     registerdatamodel.h registerdatamodel.cpp
     modbusvalidator.h modbusvalidator.cpp
@@ -36,6 +36,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(serialport
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        abstractmodbusmanager.h abstractmodbusmanager.cpp
+        modbusrtumanager.h modbusrtumanager.cpp
+        modbustcpmanager.h modbustcpmanager.cpp
     )
 else()
     if(ANDROID)

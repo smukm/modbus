@@ -22,6 +22,9 @@ static const QString KEY_BAUD_RATE  = "baudRate";
 static const QString KEY_PARITY     = "parity";
 static const QString KEY_DATA_BITS  = "dataBits";
 static const QString KEY_STOP_BITS  = "stopBits";
+static const QString KEY_CONNECTION_TYPE  = "connectionType";
+static const QString KEY_TCP_ADDRESS  = "tcpAddress";
+static const QString KEY_TCP_PORT  = "tcpPort";
 
 // Ключи внутри ветки readSettings
 static const QString KEY_READ_DEV_ADDR   = "deviceAddr";
@@ -107,6 +110,10 @@ bool SettingsManager::savePortSettings(const ModbusConnectionSettings &settings)
     portObj[KEY_PARITY]    = settings.parity;
     portObj[KEY_DATA_BITS] = settings.dataBits;
     portObj[KEY_STOP_BITS] = settings.stopBits;
+    portObj[KEY_CONNECTION_TYPE] = static_cast<int>(settings.type);
+    portObj[KEY_TCP_ADDRESS] = settings.ipAddress;
+    portObj[KEY_TCP_PORT] = settings.port;
+
 
     rootObj[KEY_PORT_SETTINGS] = portObj;
 
@@ -121,6 +128,9 @@ ModbusConnectionSettings SettingsManager::loadPortSettings()
     defaults.parity    = 0; // QSerialPort::NoParity
     defaults.dataBits  = 8; // QSerialPort::Data8
     defaults.stopBits  = 1; // QSerialPort::OneStop
+    defaults.type = ModbusConnectionSettings::ConnectionType::Serial;
+    defaults.ipAddress = "127.0.0.1";
+    defaults.port = 502;
 
     QJsonObject rootObj = loadRootObject();
     if (!rootObj.contains(KEY_PORT_SETTINGS)) {
@@ -128,12 +138,17 @@ ModbusConnectionSettings SettingsManager::loadPortSettings()
     }
 
     QJsonObject portObj = rootObj[KEY_PORT_SETTINGS].toObject();
-    ModbusConnectionSettings settings;
+    ModbusConnectionSettings settings = defaults;
     settings.portName = portObj[KEY_PORT_NAME].toString();
     settings.baudRate = portObj[KEY_BAUD_RATE].toInt(defaults.baudRate);
     settings.parity   = portObj[KEY_PARITY].toInt(defaults.parity);
     settings.dataBits = portObj[KEY_DATA_BITS].toInt(defaults.dataBits);
     settings.stopBits = portObj[KEY_STOP_BITS].toInt(defaults.stopBits);
+    settings.type = static_cast<ModbusConnectionSettings::ConnectionType>(
+        portObj[KEY_CONNECTION_TYPE].toInt(static_cast<int>(defaults.type))
+        );
+    settings.ipAddress = portObj[KEY_TCP_ADDRESS].toString(defaults.ipAddress);
+    settings.port = static_cast<qint16>(portObj[KEY_TCP_PORT].toInt(defaults.port));
 
     return settings;
 }
