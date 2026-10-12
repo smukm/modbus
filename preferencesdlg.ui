@@ -13,84 +13,76 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Orientation::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="gridLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>20</y>
-     <width>381</width>
-     <height>211</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="leModbusRtuTimeout"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="lblModbusRtuTimeout">
-      <property name="text">
-       <string>Timeout (RTU), ms</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="leModbusRtuRetries"/>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lePollInterval"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="leModbusTcpTimeout"/>
-    </item>
-    <item row="4" column="1">
-     <widget class="QLineEdit" name="leModbusTcpRetries"/>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="lblPollInterval">
-      <property name="text">
-       <string>Poll Interval, ms</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="lblModbusRtuRetries">
-      <property name="text">
-       <string>Retries (RTU)</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="lblModbusTcpTimeout">
-      <property name="text">
-       <string>Timeout (TCP), ms</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="lblModbusTcpRetires">
-      <property name="text">
-       <string>Retries (TCP)</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="leModbusRtuTimeout"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lblModbusRtuTimeout">
+         <property name="text">
+          <string>Timeout (RTU), ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="leModbusRtuRetries"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lePollInterval"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="leModbusTcpTimeout"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="leModbusTcpRetries"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lblPollInterval">
+         <property name="text">
+          <string>Poll Interval, ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lblModbusRtuRetries">
+         <property name="text">
+          <string>Retries (RTU)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lblModbusTcpTimeout">
+         <property name="text">
+          <string>Timeout (TCP), ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="lblModbusTcpRetires">
+         <property name="text">
+          <string>Retries (TCP)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
