@@ -14,55 +14,57 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_5">
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <property name="spacing">
-       <number>15</number>
-      </property>
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2,0">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2,0">
-          <item>
-           <widget class="QComboBox" name="cbConnectionType"/>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cbPorts"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnApply">
-            <property name="text">
-             <string>Open</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QComboBox" name="cbConnectionType"/>
         </item>
         <item>
-         <widget class="QGroupBox" name="gbPortSettings">
-          <property name="title">
-           <string>Port settings</string>
+         <widget class="QComboBox" name="cbPorts"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnApply">
+          <property name="text">
+           <string>Open</string>
           </property>
-          <widget class="QWidget" name="gridLayoutWidget">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>20</y>
-             <width>371</width>
-             <height>195</height>
-            </rect>
-           </property>
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="3" column="0">
-             <widget class="QLabel" name="lblStopBits">
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QSplitter" name="splitter">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <widget class="QGroupBox" name="gbPortSettings">
+         <property name="title">
+          <string>Port settings</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblBaudRate">
               <property name="text">
-               <string>Stop Bits</string>
+               <string>Baud Rate</string>
               </property>
              </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="cbBaudRate"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="lblDataBits">
+              <property name="text">
+               <string>Data Bits</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="cbDataBits"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="lblParity">
@@ -74,38 +76,15 @@
             <item row="2" column="1">
              <widget class="QComboBox" name="cbParity"/>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="lblDataBits">
+            <item row="3" column="0">
+             <widget class="QLabel" name="lblStopBits">
               <property name="text">
-               <string>Data Bits</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="cbBaudRate"/>
-            </item>
-            <item row="5" column="1">
-             <widget class="QSpinBox" name="sbPort">
-              <property name="maximum">
-               <number>65535</number>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="lblBaudRate">
-              <property name="text">
-               <string>Baud Rate</string>
+               <string>Stop Bits</string>
               </property>
              </widget>
             </item>
             <item row="3" column="1">
              <widget class="QComboBox" name="cbStopBits"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="cbDataBits"/>
-            </item>
-            <item row="4" column="1">
-             <widget class="QLineEdit" name="leIpAddress"/>
             </item>
             <item row="4" column="0">
              <widget class="QLabel" name="lblIpAddress">
@@ -114,6 +93,9 @@
               </property>
              </widget>
             </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="leIpAddress"/>
+            </item>
             <item row="5" column="0">
              <widget class="QLabel" name="lblPort">
               <property name="text">
@@ -121,46 +103,41 @@
               </property>
              </widget>
             </item>
+            <item row="5" column="1">
+             <widget class="QSpinBox" name="sbPort">
+              <property name="maximum">
+               <number>65535</number>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </widget>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="gbCommand">
-          <property name="title">
-           <string>Read Registers</string>
-          </property>
-          <widget class="QWidget" name="gridLayoutWidget_2">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>30</y>
-             <width>371</width>
-             <height>160</height>
-            </rect>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="2" column="1">
-             <widget class="QComboBox" name="cbReadCode"/>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_11">
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QGroupBox" name="gbCommand">
+         <property name="title">
+          <string>Read Registers</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_8">
               <property name="text">
-               <string>Number of Registers</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QLineEdit" name="leReadRegisterAddress">
-              <property name="placeholderText">
-               <string>0x00</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Function Code</string>
+               <string>Device Address SlaveID</string>
               </property>
              </widget>
             </item>
@@ -171,187 +148,204 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="leReadRegistersQty">
-              <property name="placeholderText">
-               <string>0x00</string>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Function Code</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
+            <item row="1" column="1">
+             <widget class="QComboBox" name="cbReadCode"/>
+            </item>
+            <item row="2" column="0">
              <widget class="QLabel" name="label_10">
               <property name="text">
                <string>Register Address</string>
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="leReadRegisterAddress">
+              <property name="placeholderText">
+               <string>0x00</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Number of Registers</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="leReadRegistersQty">
+              <property name="placeholderText">
+               <string>0x00</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnSendData">
+            <property name="text">
+             <string>Execute</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Write to Registers</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <layout class="QFormLayout" name="formLayout_3">
             <item row="0" column="0">
-             <widget class="QLabel" name="label_8">
+             <widget class="QLabel" name="label_13">
               <property name="text">
                <string>Device Address SlaveID</string>
               </property>
              </widget>
             </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="leWriteDeviceAddress">
+              <property name="placeholderText">
+               <string>0x01</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Function Code</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="cbWriteCode"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>Register Address</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="leWriteRegisterAddress">
+              <property name="placeholderText">
+               <string>0x00</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Number of Registers</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="leWriteRegistersQty">
+              <property name="placeholderText">
+               <string>0x00</string>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </widget>
-          <widget class="QPushButton" name="btnSendData">
-           <property name="geometry">
-            <rect>
-             <x>500</x>
-             <y>30</y>
-             <width>85</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Execute</string>
-           </property>
-          </widget>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QGroupBox" name="groupBox">
-            <property name="title">
-             <string>Write to Registers</string>
-            </property>
-            <widget class="QWidget" name="gridLayoutWidget_3">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>30</y>
-               <width>361</width>
-               <height>141</height>
-              </rect>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="leWriteDeviceAddress">
-                <property name="placeholderText">
-                 <string>0x01</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Function Code</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="cbWriteCode"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>Device Address SlaveID</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_15">
-                <property name="text">
-                 <string>Register Address</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="leWriteRegisterAddress">
-                <property name="placeholderText">
-                 <string>0x00</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_16">
-                <property name="text">
-                 <string>Number of Registers</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="leWriteRegistersQty">
-                <property name="placeholderText">
-                 <string>0x00</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QPushButton" name="btnExecuteOnce">
-             <property name="geometry">
-              <rect>
-               <x>500</x>
-               <y>80</y>
-               <width>80</width>
-               <height>27</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Execute</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="leData">
-             <property name="geometry">
-              <rect>
-               <x>380</x>
-               <y>30</y>
-               <width>201</width>
-               <height>27</height>
-              </rect>
-             </property>
-             <property name="placeholderText">
-              <string>comma-separated values (e.g.:  10, 20, 30)</string>
-             </property>
-            </widget>
-           </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnClearErrors">
-            <property name="enabled">
-             <bool>false</bool>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
-            <property name="text">
-             <string>Clear errors</string>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
             </property>
-           </widget>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QLineEdit" name="leData">
+              <property name="placeholderText">
+               <string>comma-separated values (e.g.:  10, 20, 30)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnExecuteOnce">
+              <property name="text">
+               <string>Execute</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
-        </item>
-       </layout>
+        </widget>
+       </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Device Response</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTableView" name="tvReceivedData"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Logs</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListView" name="lvLog"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="btnClearLogs">
-          <property name="text">
-           <string>Очистить логи</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QPushButton" name="btnClearErrors">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Clear errors</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Device Response</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="tvReceivedData"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Logs</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListView" name="lvLog"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnClearLogs">
+        <property name="text">
+         <string>Очистить логи</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
