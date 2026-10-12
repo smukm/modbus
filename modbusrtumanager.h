@@ -12,6 +12,8 @@ public:
 
     void connectToDevice(const ModbusConnectionSettings &settings) override;
     bool isConnected() const override;
+
+    void updateConnectionParameters(const Preferences &preferences) override;
 };
 
 #endif // MODBUSRTUMANAGER_H

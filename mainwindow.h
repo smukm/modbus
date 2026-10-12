@@ -15,6 +15,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class PreferencesDlg;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -52,5 +54,8 @@ private slots:
     void onStartWriting();
     void onPollingTimeout();
     void onLogAdded();
+
+    void onPreferencesRequested();
+    void onPreferencesApplied(const Preferences &prefs);
 };
 #endif // MAINWINDOW_H

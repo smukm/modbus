@@ -17,6 +17,15 @@ struct ModbusLastParams {
     QString writeData = "";
 };
 
+// Настройки программы
+struct Preferences {
+    quint16 pollInterval = 2000; // Интервал опроса в миллисекундах
+    quint16 modbusRtuTimeout = 1000; // Таймаут на чтение устройства по RTU
+    quint8 modbusRtuRetries = 3; // Количество попыток чтения устройства по RTU
+    quint16 modbusTcpTimeout = 1000; // Таймаут на чтение устройства по TCP
+    quint8 modbusTcpRetries = 1; // Количество попыток чтения устройства по TCP
+};
+
 class SettingsManager
 {
 public:
@@ -36,6 +45,9 @@ public:
     // Последние параметры команд (чтение/запись)
     static bool saveLastParams(const ModbusLastParams &params);
     static ModbusLastParams loadLastParams();
+
+    static bool savePreferences(const Preferences& preferences);
+    static Preferences loadPreferences();
 
 private:
     // Вспомогательные методы для работы с корневым JSON-объектом

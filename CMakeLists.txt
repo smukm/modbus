@@ -39,6 +39,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         abstractmodbusmanager.h abstractmodbusmanager.cpp
         modbusrtumanager.h modbusrtumanager.cpp
         modbustcpmanager.h modbustcpmanager.cpp
+        preferencesdlg.h preferencesdlg.cpp preferencesdlg.ui
     )
 else()
     if(ANDROID)

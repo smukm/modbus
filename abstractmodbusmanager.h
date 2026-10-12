@@ -1,6 +1,7 @@
 #ifndef ABSTRACTMODBUSMANAGER_H
 #define ABSTRACTMODBUSMANAGER_H
 
+//#include "settingsmanager.h"
 #include <QObject>
 #include <QModbusClient>
 #include <QModbusDevice>
@@ -39,6 +40,8 @@ struct ModbusRequest {
     QVector<quint16> values;
 };
 
+struct Preferences;
+
 class AbstractModbusManager : public QObject
 {
     Q_OBJECT
@@ -49,6 +52,11 @@ public:
     // Чисто виртуальные методы, которые должны реализовать наследники
     virtual void connectToDevice(const ModbusConnectionSettings &settings) = 0;
     virtual bool isConnected() const = 0;
+    /**
+     * @brief Применяет новые параметры таймаута и повторных попыток к активному соединению.
+     * Должен быть переопределен в наследниках для учета специфики RTU/TCP.
+     */
+    virtual void updateConnectionParameters(const Preferences &preferences) = 0;
 
     void disconnectFromDevice();
     bool isProcessing() const { return m_isProcessing; }

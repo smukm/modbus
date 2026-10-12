@@ -15,6 +15,7 @@ static const QString CONFIG_FILE_NAME = "modbus_settings.json";
 static const QString KEY_PORT_SETTINGS  = "portSettings";
 static const QString KEY_READ_SETTINGS  = "readSettings";
 static const QString KEY_WRITE_SETTINGS = "writeSettings";
+static const QString KEY_PREFERENCES = "preferences";
 
 // Ключи внутри ветки portSettings
 static const QString KEY_PORT_NAME  = "portName";
@@ -38,6 +39,13 @@ static const QString KEY_WRITE_FUNC_CODE  = "funcCode";
 static const QString KEY_WRITE_START_ADDR = "startAddr";
 static const QString KEY_WRITE_COUNT      = "count";
 static const QString KEY_WRITE_DATA       = "data";
+
+// Ключи внутри ветки preferences
+static const QString KEY_PREFERENCES_POLL_INTERVAL = "pollInterval";
+static const QString KEY_PREFERENCES_MODBUS_RTU_TIMEOUT = "modbusRtuTimeout";
+static const QString KEY_PREFERENCES_MODBUS_RTU_RETRIES = "modbusRtuRetries";
+static const QString KEY_PREFERENCES_MODBUS_TCP_TIMEOUT = "modbusTcpTimeout";
+static const QString KEY_PREFERENCES_MODBUS_TCP_RETRIES = "modbusTcpRetries";
 
 
 QString SettingsManager::configFilePath()
@@ -210,6 +218,39 @@ ModbusLastParams SettingsManager::loadLastParams()
         defaults.writeStartAddr  = static_cast<quint16>(writeObj[KEY_WRITE_START_ADDR].toInt(defaults.writeStartAddr));
         defaults.writeCount      = static_cast<quint16>(writeObj[KEY_WRITE_COUNT].toInt(defaults.writeCount));
         defaults.writeData       = writeObj[KEY_WRITE_DATA].toString(defaults.writeData);
+    }
+
+    return defaults;
+}
+
+
+bool SettingsManager::savePreferences(const Preferences& preferences) {
+    QJsonObject rootObj = loadRootObject();
+
+    QJsonObject preferencesObj;
+    preferencesObj[KEY_PREFERENCES_POLL_INTERVAL] = static_cast<quint16>(preferences.pollInterval);
+    preferencesObj[KEY_PREFERENCES_MODBUS_RTU_TIMEOUT] = static_cast<quint16>(preferences.modbusRtuTimeout);
+    preferencesObj[KEY_PREFERENCES_MODBUS_RTU_RETRIES] = static_cast<quint8>(preferences.modbusRtuRetries);
+    preferencesObj[KEY_PREFERENCES_MODBUS_TCP_TIMEOUT] = static_cast<quint16>(preferences.modbusTcpTimeout);
+    preferencesObj[KEY_PREFERENCES_MODBUS_TCP_RETRIES] = static_cast<quint8>(preferences.modbusTcpRetries);
+
+
+    rootObj[KEY_PREFERENCES] = preferencesObj;
+
+    return saveRootObject(rootObj);
+}
+
+Preferences SettingsManager::loadPreferences() {
+    Preferences defaults;
+    QJsonObject rootObj = loadRootObject();
+
+    if (rootObj.contains(KEY_PREFERENCES)) {
+        QJsonObject preferencesObj = rootObj[KEY_PREFERENCES].toObject();
+        defaults.pollInterval = static_cast<quint16>(preferencesObj[KEY_PREFERENCES_POLL_INTERVAL].toInt(defaults.pollInterval));
+        defaults.modbusRtuTimeout = static_cast<quint16>(preferencesObj[KEY_PREFERENCES_MODBUS_RTU_TIMEOUT].toInt(defaults.modbusRtuTimeout));
+        defaults.modbusRtuRetries = static_cast<quint8>(preferencesObj[KEY_PREFERENCES_MODBUS_RTU_RETRIES].toInt(defaults.modbusRtuRetries));
+        defaults.modbusTcpTimeout = static_cast<quint16>(preferencesObj[KEY_PREFERENCES_MODBUS_TCP_TIMEOUT].toInt(defaults.modbusTcpTimeout));
+        defaults.modbusTcpRetries = static_cast<quint8>(preferencesObj[KEY_PREFERENCES_MODBUS_TCP_RETRIES].toInt(defaults.modbusTcpRetries));
     }
 
     return defaults;

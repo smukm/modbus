@@ -1,4 +1,5 @@
 #include "modbusrtumanager.h"
+#include "settingsmanager.h"
 
 ModbusRtuManager::ModbusRtuManager(QObject *parent)
     : AbstractModbusManager(parent)
@@ -21,15 +22,22 @@ void ModbusRtuManager::connectToDevice(const ModbusConnectionSettings &settings)
     connectDeviceSignals();
 
     // Для Serial-соединений допустимо больше попыток из-за шумов в линии
-    m_modbusDevice->setTimeout(1000);
-    m_modbusDevice->setNumberOfRetries(3);
+    Preferences preferences = SettingsManager::loadPreferences();
+    m_modbusDevice->setTimeout(preferences.modbusRtuTimeout);
+    m_modbusDevice->setNumberOfRetries(preferences.modbusRtuRetries);
 
     if (!m_modbusDevice->connectDevice()) {
         emit errorCriticalOccurred(tr("Failed to initiate Serial connection: ") + m_modbusDevice->errorString());
     }
 }
 
-
 bool ModbusRtuManager::isConnected() const {
     return m_modbusDevice && m_modbusDevice->state() == QModbusDevice::ConnectedState;
+}
+
+void ModbusRtuManager::updateConnectionParameters(const Preferences &preferences) {
+    if (m_modbusDevice && isConnected()) {
+        m_modbusDevice->setTimeout(preferences.modbusRtuTimeout);
+        m_modbusDevice->setNumberOfRetries(preferences.modbusRtuRetries);
+    }
 }

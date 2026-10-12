@@ -3,6 +3,7 @@
 #include "modbusrtumanager.h"
 #include "modbustcpmanager.h"
 #include "modbusvalidator.h"
+#include "preferencesdlg.h"
 #include "settingsmanager.h"
 #include <QMenuBar>
 #include <QMenu>
@@ -34,7 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_logManager, &LogManager::logAdded, this, &MainWindow::onLogAdded);
 
     // Настройка таймера для периодического опроса
-    m_pollingTimer->setInterval(2000); // Интервал опроса в миллисекундах (2 секунды)
+    Preferences preferences = SettingsManager::loadPreferences();
+    m_pollingTimer->setInterval(preferences.pollInterval); // Интервал опроса в миллисекундах (2 секунды)
     connect(m_pollingTimer, &QTimer::timeout, this, &MainWindow::onPollingTimeout);
 
     // 1. Загружаем сохраненные настройки, чтобы создать правильный менеджер сразу
@@ -63,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
          m_logManager->clear();
      });
      connect(ui->btnClearErrors, &QPushButton::clicked, this, [this]() {
-         if (m_modbusManager) { // Дополнительная защита от nullptr
+         if (m_modbusManager) {
              m_modbusManager->clearAllExclusions();
          }
          m_registerModel->clearAllExclusions();
@@ -195,6 +197,11 @@ void MainWindow::setupModbusConnections() {
  */
 void MainWindow::createMenu() {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QAction *preferencesAction = fileMenu->addAction(tr("&Preferences"));
+    preferencesAction->setShortcut(QKeySequence::Preferences); // Стандартный шорткат (Ctrl+,)
+    connect(preferencesAction, &QAction::triggered, this, &MainWindow::onPreferencesRequested);
+
+    fileMenu->addSeparator();
     QAction *exitAction = fileMenu->addAction(tr("&Exit"));
     connect(exitAction, &QAction::triggered, this, &QWidget::close);
 }
@@ -353,6 +360,10 @@ void MainWindow::onOpenPort() {
 
     savePortSettings(settings);
     m_modbusManager->connectToDevice(settings);
+
+    // Применяем актуальные настройки таймаутов из Preferences сразу после инициации подключения
+    Preferences prefs = SettingsManager::loadPreferences();
+    m_modbusManager->updateConnectionParameters(prefs);
 }
 
 /**
@@ -557,6 +568,28 @@ void MainWindow::onPollingTimeout() {
 void MainWindow::onLogAdded() {
     // Автоматическая прокрутка к последней записи
     ui->lvLog->scrollToBottom();
+}
+
+void MainWindow::onPreferencesRequested() {
+    PreferencesDlg dlg(this);
+    dlg.loadSettings(); // Заполняем поля текущими значениями
+
+    // Соединяем сигнал диалога со слотом главного окна
+    connect(&dlg, &PreferencesDlg::settingsApplied, this, &MainWindow::onPreferencesApplied);
+
+    dlg.exec(); // Показываем модальное окно
+}
+
+void MainWindow::onPreferencesApplied(const Preferences &prefs) {
+    // Обновляем интервал таймера опроса
+    m_pollingTimer->setInterval(prefs.pollInterval);
+    m_logManager->addLog(tr("⚙️ Preferences updated. Poll interval set to %1 ms.").arg(prefs.pollInterval));
+
+    // Если устройство уже подключено, применяем новые таймауты на лету
+    if (m_modbusManager && m_modbusManager->isConnected()) {
+        m_modbusManager->updateConnectionParameters(prefs);
+        m_logManager->addLog(tr("⚙️ Active connection parameters (timeout/retries) updated."));
+    }
 }
 
 
